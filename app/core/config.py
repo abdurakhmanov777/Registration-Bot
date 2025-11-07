@@ -1,4 +1,3 @@
-import codecs
 import os
 from pathlib import Path
 from typing import Set
@@ -8,19 +7,19 @@ from dotenv import load_dotenv
 # ------------------------------------------------------------
 # Загрузка переменных окружения
 # ------------------------------------------------------------
-from_path: Path = Path(__file__).parent.parent / ".env"
-load_dotenv(from_path)
+load_dotenv()  # Загружает переменные из .env
+
 # ------------------------------------------------------------
 # Основные настройки приложения
 # ------------------------------------------------------------
 BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
 DB_URL: str = os.getenv("DB_URL", "")
-LOG_FILE: str = os.getenv("LOG_FILE", "logs/app.log")
+LOG_FILE: Path = Path(os.getenv("LOG_FILE", str(Path("logs") / "app.log")))
 
 # ------------------------------------------------------------
 # Пути к ресурсам
 # ------------------------------------------------------------
-ASSETS_DIR = Path(os.getenv("ASSETS_DIR", "assets"))
+ASSETS_DIR: Path = Path(os.getenv("ASSETS_DIR", "assets"))
 IMAGES_DIR: Path = ASSETS_DIR / "images"
 FONTS_DIR: Path = ASSETS_DIR / "fonts"
 
@@ -34,8 +33,7 @@ TIME_ZONE: int = int(os.getenv("TIME_ZONE", "0"))
 MAIN_ADMINS: list[int] = [
     int(x) for x in os.getenv("MAIN_ADMINS", "").split(",") if x
 ]
-
-SYMB: str = codecs.decode(os.getenv("SYMB", "").encode(), "unicode_escape")
+SYMB: str = os.getenv("SYMB", "")
 
 # ------------------------------------------------------------
 # Google Sheets
