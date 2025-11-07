@@ -2,7 +2,7 @@ import asyncio
 
 from loguru import logger
 
-from app.core.bot_init import run_bot
+from app.core.init_bot import run_bot
 from app.database.init_db import async_main
 
 
@@ -11,7 +11,7 @@ async def main() -> None:
     await async_main()
 
     # Запуск бота
-    await run_bot()
+    # await run_bot()
 
 
 if __name__ == "__main__":
