@@ -1,0 +1,13 @@
+aiogram
+aiosqlite
+asyncpg
+sqlalchemy
+loguru
+python-dotenv
+pymorphy3
+pytest
+pytest-asyncio
+segno
+pillow
+gspread
+# pytz
