@@ -14,7 +14,7 @@ from aiogram import BaseMiddleware
 from app.filters import AdminFilter
 from app.utils.logger import log_error
 
-from .update_language import update_language_data
+from .loc_data import update_loc_data
 
 # Временный список администраторов для демонстрации
 TEMP_ADMINS: list[int] = [111111111, 1645736584]
@@ -63,7 +63,7 @@ class MwBase(BaseMiddleware):
         data.update(self.extra_data)
 
         # Обновляем языковые данные пользователя
-        await update_language_data(data, event)
+        await update_loc_data(data, event)
 
         # Проверяем роль администратора и добавляем в data
         if event:

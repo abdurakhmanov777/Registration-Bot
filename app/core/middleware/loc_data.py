@@ -9,7 +9,7 @@ from app.services.localization import load_localization_main
 from app.services.requests.requests import get_user_by_tg_id
 
 
-async def update_language_data(
+async def update_loc_data(
     data: dict,
     event: Optional[Any] = None,
 ) -> None:

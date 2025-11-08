@@ -5,12 +5,12 @@
 
 from .aliases import MwCallback, MwCommand, MwMessage
 from .base import MwBase
-from .update_language import update_language_data
+from .loc_data import update_loc_data
 
 __all__: list[str] = [
     "MwBase",
     "MwCommand",
     "MwMessage",
     "MwCallback",
-    "update_language_data",
+    "update_loc_data",
 ]
