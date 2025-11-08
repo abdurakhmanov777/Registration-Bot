@@ -25,9 +25,9 @@ GSHEET_PAGE: str = os.getenv("GSHEET_PAGE", "Участники")
 COMMAND_MAIN: Set[str] = {
     "start", "help", "test", "admin"
 }
-CALLBACK_MAIN: Set[str] = {
-    "start", "settings", "info", "miniapp"
-}
+CALLBACK_MAIN = [
+    "start", "settings", "info", "miniapp", "table", "admin"
+]
 CALLBACK_SELECT: Set[str] = {
     "lang"
 }

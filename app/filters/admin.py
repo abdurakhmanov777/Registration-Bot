@@ -2,7 +2,7 @@
 Фильтр для проверки прав администратора с произвольными ролями.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery, Message
@@ -10,40 +10,43 @@ from aiogram.types import CallbackQuery, Message
 from app.core.config import MAIN_ADMINS
 
 # Временный список администраторов для демонстрации
-TEMP_ADMINS: list[int] = [111111111, 1645736584]
+ADMINS: List[int] = [111111111, 1645736584]
+
+# Словарь ролей с их пользователями
+ROLES: Dict[str, List[int]] = {
+    "main": MAIN_ADMINS,
+    "moderator": ADMINS,
+}
 
 
 class AdminFilter(BaseFilter):
     """
-    Проверяет, является ли пользователь администратором.
+    Фильтр для проверки, является ли пользователь администратором.
 
     Возвращает словарь с ролью, если пользователь найден,
-    иначе False (требование BaseFilter в Aiogram 3.x).
+    иначе возвращает False.
     """
 
     def __init__(
         self,
-        roles: Optional[Dict[str, list[int]]] = None,
+        roles: Optional[Dict[str, List[int]]] = None,
     ) -> None:
         """
         Инициализация фильтра.
 
         Args:
-            roles (Optional[Dict[str, list[int]]]): Словарь ролей
-                с их пользователями.
+            roles (Optional[Dict[str, List[int]]]): Словарь ролей
+                с пользователями. Если None, используется
+                глобальный словарь ROLES.
         """
-        default_roles: Dict[str, List[int]] = {
-            "main": MAIN_ADMINS,
-            "moderator": TEMP_ADMINS,
-        }
-        self.roles: Dict[str, list[int]] = roles or default_roles
+        self.roles: Dict[str, List[int]] = roles or ROLES
 
     async def __call__(
         self,
         event: Message | CallbackQuery,
     ) -> Union[Dict[str, Any], bool]:
         """
-        Проверяет роли пользователя.
+        Проверяет роль пользователя.
 
         Args:
             event (Message | CallbackQuery): Событие от Telegram.
@@ -52,6 +55,7 @@ class AdminFilter(BaseFilter):
             dict[str, Any] | bool: Словарь с ролью, если пользователь
                 найден, иначе False.
         """
+        # Получаем объект пользователя из события
         from_user: Any | None = getattr(event, "from_user", None)
         if not from_user:
             return False
@@ -82,6 +86,7 @@ class AdminFilter(BaseFilter):
                 if member.status in {"administrator", "creator"}:
                     return {"role": "moderator"}
             except Exception:
+                # Игнорируем ошибки, например, если бот не администратор
                 pass
 
         return False

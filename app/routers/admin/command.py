@@ -14,7 +14,7 @@ router = Router()
 
 
 def admin_command(
-    *commands: str
+    *filters: Any
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Декоратор для регистрации команд, доступных только
@@ -31,12 +31,12 @@ def admin_command(
         return router.message(
             ChatTypeFilter(chat_type=["private"]),
             AdminFilter(),
-            Command(*commands)
+            *filters
         )(func)
     return decorator
 
 
-@admin_command("admin")
+@admin_command(Command("admin"))
 async def admin_start(
     message: Message,
     state: FSMContext,
@@ -50,16 +50,54 @@ async def admin_start(
         message (Message): Объект входящего сообщения Telegram.
         state (FSMContext): Объект контекста состояний FSM.
     """
+    # print(role)
     loc: Any | None = (await state.get_data()).get("loc_admin")
     if not loc:
         return
     # print(loc.default)
 
     # Получаем текст и данные клавиатуры из локализации
-    text: Any = loc.default.text.admin
-    # default_loc: Any | Dict[Any, Any] = getattr(loc, "default", {})
-    # text: Any | str = getattr(getattr(default_loc, "text", {}), 'settings', "")
-    # Формируем текст и отправляем сообщение
-    # text: str = f"Админ панель\n\n{admin_role['role']}"
-    await message.answer(text=text, parse_mode="HTML")
+    text: Any = loc.default.admin.text
+    keyboard_data: Any = loc.default.admin.keyboard
+
+    # Создаём клавиатуру
+    keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
+    await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
     await log(message)
+
+
+# @admin_command(AdminCallbackFilter())
+# async def main(
+#     message: Message,
+#     state: FSMContext
+# ) -> None:
+#     """
+#     Обрабатывает основную команду пользователя.
+
+#     Получает текст и клавиатуру из локализации по ключу команды
+#     и отправляет сообщение с динамической клавиатурой.
+
+#     Args:
+#         message (Message): Входящее сообщение Telegram.
+#         state (FSMContext): Контекст FSM для хранения данных пользователя.
+#     """
+#     text_content: str | None = message.text
+#     if not text_content:
+#         return
+#     key: str = text_content.lstrip("/").split()[0]
+#     print(key)
+#     data: Dict[str, Any] = await state.get_data()
+#     loc: Any = data.get("loc_admin")
+#     if not loc:
+#         return
+
+#     # Получаем текст и данные клавиатуры через getattr
+#     text: str = getattr(loc.default, key).text
+#     keyboard_data: Any = getattr(loc.default, key).keyboard
+
+#     # Создаём клавиатуру
+#     keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
+
+#     # Отправляем сообщение
+#     await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
+#     await log(message)
