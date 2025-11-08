@@ -1,0 +1,143 @@
+{
+    "default": {
+        "text": {
+            "start": "<b>Educational-Methodical Commission Bot!</b>\n\n<blockquote>Get a consultation</blockquote>",
+            "help": "<b>If the bot is not working correctly, contact the administrator. For other questions, contact the chairman of the Educational-Methodical Commission.</b>\n\n<i>Click on a contact or close the window</i>",
+            "settings": "<b>Select a setting</b>\n\n<i>Click a button to proceed</i>",
+            "info": "<b>Educational-Methodical Commission Bot</b>\n\n<i>Click a button to go back</i>",
+            "lang": "<b>Select a language</b>\n\n<i>Click a button to change it</i>",
+            "miniapp": "<b>Mini-app created</b>\n\n<i>Click a button to open it</i>",
+            "test": "<b>Test mini-app created</b>\n\n<i>Click a button to open it</i>",
+            "url_app": "https://abdurakhmanov777.github.io/EventFlow-Frontend/",
+            "url_test": "https://lh7fk1md-5500.euw.devtunnels.ms/"
+        },
+        "keyboard": {
+            "start": [
+                [
+                    [
+                        "Get a consultation",
+                        "https://abdurakhmanov777.github.io/EventFlow-Frontend/"
+                    ]
+                ],
+                [
+                    [
+                        "Settings",
+                        "settings"
+                    ],
+                    [
+                        "About us",
+                        "info"
+                    ]
+                ]
+            ],
+            "settings": [
+                [
+                    [
+                        "System language",
+                        "lang"
+                    ]
+                ],
+                [
+                    [
+                        "Back",
+                        "start"
+                    ]
+                ]
+            ],
+            "info": [
+                [
+                    [
+                        "Back",
+                        "start"
+                    ]
+                ]
+            ],
+            "lang": [
+                [
+                    "Russian",
+                    "select_lang_ru"
+                ],
+                [
+                    "English",
+                    "select_lang_en"
+                ],
+                [
+                    "Back",
+                    "settings"
+                ]
+            ],
+            "test": [
+                [
+                    [
+                        "Open mini-app",
+                        "webapp",
+                        "https://lh7fk1md-5500.euw.devtunnels.ms/"
+                    ]
+                ],
+                [
+                    [
+                        "Settings",
+                        "settings"
+                    ]
+                ]
+            ],
+            "help": [
+                [
+                    [
+                        "Chairman of EMC",
+                        "url",
+                        "tg://user?id=597837664"
+                    ]
+                ],
+                [
+                    [
+                        "Bot administrator",
+                        "url",
+                        "tg://user?id=1645736584"
+                    ]
+                ],
+                [
+                    [
+                        "Close window",
+                        "delete"
+                    ]
+                ]
+            ],
+            "delete": [
+                [
+                    [
+                        "Close window",
+                        "delete"
+                    ]
+                ]
+            ]
+        }
+    },
+    "template": {
+        "id": [
+            "<b>Chat ID: </b><code>",
+            "</code>\n\n<i>Click to copy</i>"
+        ],
+        "input": {
+            "start": [
+                "<b>Enter ",
+                "</b>\n\n<i>Format: ",
+                "</i>"
+            ],
+            "saved": [
+                "<b>",
+                ": ",
+                "</b>\n\n<i>To change the data, enter it again</i>"
+            ],
+            "error": [
+                "<b>Invalid input</b>\n\n<i>Format: ",
+                "</i>"
+            ],
+            "error_callback": "No information about "
+        },
+        "select": [
+            "<b>Select ",
+            "</b>\n\n<i>Click on the desired option</i>"
+        ]
+    }
+}

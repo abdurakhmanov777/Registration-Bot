@@ -15,12 +15,13 @@ load_dotenv()
 # ------------------------------------------------------------
 # Основные директории проекта
 # ------------------------------------------------------------
-ASSETS_DIR: Path = BASE_DIR / "app" / "assets"          # Папка с ресурсами
-IMAGES_DIR: Path = ASSETS_DIR / "images"                # Картинки
-FONTS_DIR: Path = ASSETS_DIR / "fonts"                  # Шрифты
-DOCUMENTS_DIR: Path = ASSETS_DIR / "documents"          # Документы
-LOCALIZATIONS_DIR: Path = ASSETS_DIR / "localizations"  # Локализация
-
+ASSETS_DIR: Path = BASE_DIR / "app" / "assets"
+IMAGES_DIR: Path = ASSETS_DIR / "images"
+FONTS_DIR: Path = ASSETS_DIR / "fonts"
+DOCUMENTS_DIR: Path = ASSETS_DIR / "documents"
+LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "localizations" / "user"
+LOCALIZATIONS_ADMIN_DIR: Path = ASSETS_DIR / "localizations" / "admin"
+LOCALIZATIONS_DIR: Path = ASSETS_DIR / "localizations" / "user"
 
 # Фоновое изображение
 IMAGE_PATH: Path = IMAGES_DIR / os.getenv("IMAGE_NAME", "background.png")

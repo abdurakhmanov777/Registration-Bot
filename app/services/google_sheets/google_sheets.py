@@ -27,23 +27,19 @@ class GoogleSheetsService:
         Если таблица или лист не найдены, устанавливает wks в None.
         """
         if not GSHEET_CREDS.exists():
-            print(f"Файл учетных данных не найден: {GSHEET_CREDS}")
             return
 
         try:
             self.gc = gspread.service_account(filename=str(GSHEET_CREDS))
         except Exception as e:
-            print(f"Ошибка при подключении к Google Sheets: {e}")
             self.gc = None
             return
 
         try:
             self.wks = self.gc.open(GSHEET_NAME).worksheet(GSHEET_PAGE)
         except gspread.SpreadsheetNotFound:
-            print(f"Таблица '{GSHEET_NAME}' не найдена.")
             self.wks = None
         except Exception as e:
-            print(f"Ошибка при открытии листа '{GSHEET_PAGE}': {e}")
             self.wks = None
 
     def get_worksheet(self) -> Optional[gspread.Worksheet]:

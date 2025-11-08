@@ -22,7 +22,7 @@ class Localization:
                 setattr(self, key, value)
 
 
-async def load_localization_main(language: str) -> Localization:
+async def load_localization(language: str) -> Localization:
     localization_file_path = 'app/localization/'
     localization_file_name = language + '.json'
 

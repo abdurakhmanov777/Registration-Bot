@@ -21,8 +21,7 @@ def user_command(
         в группах и супергруппах.
 
     Args:
-        *commands (str): Названия команд для
-        фильтрации (например, "start", "help").
+        *commands (str): Названия команд для фильтрации.
 
     Returns:
         Callable: Декоратор для функции-обработчика.
@@ -47,66 +46,61 @@ async def main(
     и отправляет сообщение с динамической клавиатурой.
 
     Args:
-        message (Message): Объект входящего сообщения Telegram.
+        message (Message): Входящее сообщение Telegram.
         state (FSMContext): Контекст FSM для хранения данных пользователя.
     """
-    # Получаем ключ команды из текста сообщения
     text_content: str | None = message.text
     if not text_content:
         return
-    key: str = text_content.lstrip('/').split()[0]
+    key: str = text_content.lstrip("/").split()[0]
 
-    # Получаем локализацию
-    loc: Any | None = (await state.get_data()).get('loc')
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Any = user_data.get("loc_user")
     if not loc:
         return
 
-    # Получаем текст и данные клавиатуры из локализации
-    default_loc: Any | Dict[Any, Any] = getattr(loc, 'default', {})
-    text: Any | str = getattr(getattr(default_loc, 'text', {}), key, '')
-    keyboard_data: Any | list[Any] = getattr(
-        getattr(default_loc, 'keyboard', {}), key, []
-    )
+    # Получаем текст и данные клавиатуры через getattr
+    text: str = getattr(getattr(loc, "default").text, key)
+    keyboard_data: Any = getattr(getattr(loc, "default").keyboard, key)
 
     # Создаём клавиатуру
     keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
 
     # Отправляем сообщение
-    await message.answer(text=text, parse_mode='HTML', reply_markup=keyboard)
+    await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
     await log(message)
 
 
 @user_command("id")
-async def user_id(message: Message, state: FSMContext) -> None:
+async def user_id(
+    message: Message,
+    state: FSMContext
+) -> None:
     """
     Отправляет ID текущего группового чата с шаблоном текста
         и динамической клавиатурой.
 
     Args:
-        message (Message): Объект входящего сообщения Telegram.
-        state (FSMContext): Объект контекста состояний FSM.
+        message (Message): Входящее сообщение Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
     """
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc")
+    loc: Any = user_data.get("loc_user")
     if not loc:
         return
 
-    # Получаем шаблон текста из локализации
-    text_template: tuple[str, str] = getattr(
+    # Шаблон текста через getattr
+    template: tuple[str, str] = getattr(
         getattr(loc, "template", {}), "id", ("", "")
     )
+    text_prefix, text_suffix = template
 
-    # Получаем данные клавиатуры
+    # Данные клавиатуры через getattr
     keyboard_data: list[Any] = getattr(
-        getattr(getattr(loc, "default", {}), "keyboard", {}),
-        "delete",
-        []
+        getattr(getattr(loc, "default", {}), "keyboard", {}), "delete", []
     )
-
-    # Создаём клавиатуру
     keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
 
-    # Формируем текст и отправляем сообщение
-    text: str = f"{text_template[0]}{message.chat.id}{text_template[1]}"
+    text: str = f"{text_prefix}{message.chat.id}{text_suffix}"
     await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
     await log(message)

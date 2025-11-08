@@ -3,8 +3,8 @@ import re
 from aiogram.enums import ChatAction
 from aiogram.types import BufferedInputFile, CallbackQuery, Message
 
-from app.services.generator.generator import create_text_image
 from app.keyboards import keyboards as kb
+from app.services.generator.generator import create_text_image
 # from app.services.requests import user_action_wrapper
 from app.utils.morphology import process_text
 

@@ -7,8 +7,8 @@ from aiogram.types import CallbackQuery, Message
 import app.services.keyboards as kb
 # from app.utils.user_actions import user_action_wrapper
 from app.core.config import CALLBACK_MAIN, CALLBACK_SELECT
-from app.filters import ChatTypeFilter
-from app.services.localization import Localization, load_localization_main
+from app.filters import AdminFilter, ChatTypeFilter
+from app.services.localization import Localization, load_localization
 from app.utils.logger import log
 
 router = Router()
@@ -31,6 +31,7 @@ def admin_callback(
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         return router.callback_query(
             ChatTypeFilter(chat_type=["private"]),
+            AdminFilter(),
             *filters
         )(func)
 
@@ -46,146 +47,146 @@ async def delete(callback: CallbackQuery) -> None:
     await log(callback)
 
 
-@admin_callback(lambda c: c.data in CALLBACK_MAIN)
-async def main(
-    callback: CallbackQuery,
-    state: FSMContext
-) -> None:
-    if not isinstance(callback.message, Message):
-        return
+# @admin_callback(lambda c: c.data in CALLBACK_MAIN)
+# async def main(
+#     callback: CallbackQuery,
+#     state: FSMContext
+# ) -> None:
+#     if not isinstance(callback.message, Message):
+#         return
 
-    loc: Optional[Localization] = (await state.get_data()).get('loc')
-    if not loc:
-        return
+#     loc: Optional[Localization] = (await state.get_data()).get('loc')
+#     if not loc:
+#         return
 
-    key: str = callback.data or ''
-    text: Any | str = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'text',
-            {}),
-        key,
-        '')
-    keyboard_data: Any | list[Any] = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
-            {}
-        ),
-        key,
-        [])
-    keyboard: kb.InlineKeyboardMarkup = await kb.keyboard_dynamic(
-        keyboard_data
-    )
+#     key: str = callback.data or ''
+#     text: Any | str = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'text',
+#             {}),
+#         key,
+#         '')
+#     keyboard_data: Any | list[Any] = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'keyboard',
+#             {}
+#         ),
+#         key,
+#         [])
+#     keyboard: kb.InlineKeyboardMarkup = await kb.keyboard_dynamic(
+#         keyboard_data
+#     )
 
-    await callback.message.edit_text(
-        text,
-        parse_mode='HTML',
-        reply_markup=keyboard
-    )
-    await log(callback)
-
-
-@admin_callback(lambda c: c.data in CALLBACK_SELECT)
-async def select(
-    callback: CallbackQuery,
-    state: FSMContext
-) -> None:
-    if not isinstance(callback.message, Message):
-        return
-
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get('loc')
-    if not loc:
-        return
-
-    key: str = callback.data or ''
-    current_value: Any | None = user_data.get(key)
-
-    text: Any | str = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'text',
-            {}),
-        key,
-        '')
-    keyboard_data: Any | list[Any] = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
-            {}),
-        key,
-        [])
-    keyboard: kb.InlineKeyboardMarkup = await kb.toggle(
-        keyboard_data,
-        f'select_{key}_{current_value}' if current_value else ''
-    )
-
-    await callback.message.edit_text(
-        text=text,
-        parse_mode='HTML',
-        reply_markup=keyboard
-    )
-    await log(callback)
+#     await callback.message.edit_text(
+#         text,
+#         parse_mode='HTML',
+#         reply_markup=keyboard
+#     )
+#     await log(callback)
 
 
-@admin_callback(lambda c: c.data and c.data.startswith('select_')
-                and len(c.data.split('_')) == 3)
-async def option(
-    callback: CallbackQuery,
-    state: FSMContext
-) -> None:
-    await callback.answer()
-    if not callback.data or not isinstance(callback.message, Message):
-        return
+# @admin_callback(lambda c: c.data in CALLBACK_SELECT)
+# async def select(
+#     callback: CallbackQuery,
+#     state: FSMContext
+# ) -> None:
+#     if not isinstance(callback.message, Message):
+#         return
 
-    await callback.message.delete()
+#     user_data: Dict[str, Any] = await state.get_data()
+#     loc: Optional[Localization] = user_data.get('loc')
+#     if not loc:
+#         return
 
-    _, key, value = callback.data.split('_')
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get('loc')
+#     key: str = callback.data or ''
+#     current_value: Any | None = user_data.get(key)
 
-    if key and value:
-        loc = await load_localization_main(value)
-        await state.update_data(lang=value, loc=loc)
+#     text: Any | str = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'text',
+#             {}),
+#         key,
+#         '')
+#     keyboard_data: Any | list[Any] = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'keyboard',
+#             {}),
+#         key,
+#         [])
+#     keyboard: kb.InlineKeyboardMarkup = await kb.toggle(
+#         keyboard_data,
+#         f'select_{key}_{current_value}' if current_value else ''
+#     )
 
-    if not loc:
-        return
+#     await callback.message.edit_text(
+#         text=text,
+#         parse_mode='HTML',
+#         reply_markup=keyboard
+#     )
+#     await log(callback)
 
-    text: Any | str = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'text',
-            {}),
-        key,
-        '')
-    keyboard_data: Any | list[Any] = getattr(
-        getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
-            {}),
-        key,
-        [])
-    keyboard: kb.InlineKeyboardMarkup = await kb.toggle(
-        keyboard_data,
-        callback.data
-    )
 
-    try:
-        await callback.message.edit_text(
-            text=text,
-            parse_mode='HTML',
-            reply_markup=keyboard
-        )
-        update_dict: Dict[str, Any] = {key: value}
-        await state.update_data(**update_dict)
-        # await user_action_wrapper(
-        #     tg_id=callback.from_user.id,
-        #     action='update',
-        #     field=key,
-        #     value=value
-        # )
-    except Exception:
-        pass
+# @admin_callback(lambda c: c.data and c.data.startswith('select_')
+#                 and len(c.data.split('_')) == 3)
+# async def option(
+#     callback: CallbackQuery,
+#     state: FSMContext
+# ) -> None:
+#     await callback.answer()
+#     if not callback.data or not isinstance(callback.message, Message):
+#         return
 
-    await log(callback)
+#     await callback.message.delete()
+
+#     _, key, value = callback.data.split('_')
+#     user_data: Dict[str, Any] = await state.get_data()
+#     loc: Optional[Localization] = user_data.get('loc')
+
+#     if key and value:
+#         loc = await load_localization(value)
+#         await state.update_data(lang=value, loc=loc)
+
+#     if not loc:
+#         return
+
+#     text: Any | str = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'text',
+#             {}),
+#         key,
+#         '')
+#     keyboard_data: Any | list[Any] = getattr(
+#         getattr(
+#             getattr(loc, 'default', {}),
+#             'keyboard',
+#             {}),
+#         key,
+#         [])
+#     keyboard: kb.InlineKeyboardMarkup = await kb.toggle(
+#         keyboard_data,
+#         callback.data
+#     )
+
+#     try:
+#         await callback.message.edit_text(
+#             text=text,
+#             parse_mode='HTML',
+#             reply_markup=keyboard
+#         )
+#         update_dict: Dict[str, Any] = {key: value}
+#         await state.update_data(**update_dict)
+#         # await user_action_wrapper(
+#         #     tg_id=callback.from_user.id,
+#         #     action='update',
+#         #     field=key,
+#         #     value=value
+#         # )
+#     except Exception:
+#         pass
+
+#     await log(callback)

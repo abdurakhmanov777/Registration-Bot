@@ -34,32 +34,3 @@ def admin_command(
             Command(*commands)
         )(func)
     return decorator
-
-
-@admin_command("admin")
-async def admin_start(
-    message: Message,
-    state: FSMContext,
-    role: dict
-) -> None:
-    """
-    Отправляет ID текущего группового чата с шаблоном текста
-        и динамической клавиатурой.
-
-    Args:
-        message (Message): Объект входящего сообщения Telegram.
-        state (FSMContext): Объект контекста состояний FSM.
-    """
-    loc: Any | None = (await state.get_data()).get("loc_admin")
-    if not loc:
-        return
-    # print(loc.default)
-
-    # Получаем текст и данные клавиатуры из локализации
-    text: Any = loc.default.text.admin
-    # default_loc: Any | Dict[Any, Any] = getattr(loc, "default", {})
-    # text: Any | str = getattr(getattr(default_loc, "text", {}), 'settings', "")
-    # Формируем текст и отправляем сообщение
-    # text: str = f"Админ панель\n\n{admin_role['role']}"
-    await message.answer(text=text, parse_mode="HTML")
-    await log(message)

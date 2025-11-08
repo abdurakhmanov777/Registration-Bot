@@ -23,7 +23,7 @@ GSHEET_PAGE: str = os.getenv("GSHEET_PAGE", "Участники")
 
 # Команды и callback-префиксы
 COMMAND_MAIN: Set[str] = {
-    "start", "help", "test"
+    "start", "help", "test", "admin"
 }
 CALLBACK_MAIN: Set[str] = {
     "start", "settings", "info", "miniapp"

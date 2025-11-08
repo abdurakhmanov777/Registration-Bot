@@ -8,7 +8,7 @@ import app.services.keyboards as kb
 # from app.utils.user_actions import user_action_wrapper
 from app.core.config import CALLBACK_MAIN, CALLBACK_SELECT
 from app.filters import ChatTypeFilter
-from app.services.localization import Localization, load_localization_main
+from app.services.localization import Localization, load_localization
 from app.utils.logger import log
 
 router = Router()
@@ -54,22 +54,23 @@ async def main(
     if not isinstance(callback.message, Message):
         return
 
-    loc: Optional[Localization] = (await state.get_data()).get('loc')
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Optional[Localization] = user_data.get("loc_user")
     if not loc:
         return
 
-    key: str = callback.data or ''
+    key: str = callback.data or ""
     text: Any | str = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'text',
+            getattr(loc, "default", {}),
+            "text",
             {}),
         key,
-        '')
+        "")
     keyboard_data: Any | list[Any] = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
+            getattr(loc, "default", {}),
+            "keyboard",
             {}
         ),
         key,
@@ -80,7 +81,7 @@ async def main(
 
     await callback.message.edit_text(
         text,
-        parse_mode='HTML',
+        parse_mode="HTML",
         reply_markup=keyboard
     )
     await log(callback)
@@ -95,42 +96,42 @@ async def select(
         return
 
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get('loc')
+    loc: Optional[Localization] = user_data.get("loc_user")
     if not loc:
         return
 
-    key: str = callback.data or ''
+    key: str = callback.data or ""
     current_value: Any | None = user_data.get(key)
 
     text: Any | str = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'text',
+            getattr(loc, "default", {}),
+            "text",
             {}),
         key,
-        '')
+        "")
     keyboard_data: Any | list[Any] = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
+            getattr(loc, "default", {}),
+            "keyboard",
             {}),
         key,
         [])
     keyboard: kb.InlineKeyboardMarkup = await kb.toggle(
         keyboard_data,
-        f'select_{key}_{current_value}' if current_value else ''
+        f"select_{key}_{current_value}" if current_value else ""
     )
 
     await callback.message.edit_text(
         text=text,
-        parse_mode='HTML',
+        parse_mode="HTML",
         reply_markup=keyboard
     )
     await log(callback)
 
 
-@user_callback(lambda c: c.data and c.data.startswith('select_')
-               and len(c.data.split('_')) == 3)
+@user_callback(lambda c: c.data and c.data.startswith("select_")
+               and len(c.data.split("_")) == 3)
 async def option(
     callback: CallbackQuery,
     state: FSMContext
@@ -141,28 +142,28 @@ async def option(
 
     await callback.message.delete()
 
-    _, key, value = callback.data.split('_')
+    _, key, value = callback.data.split("_")
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get('loc')
+    loc: Optional[Localization] = user_data.get("loc_user")
 
     if key and value:
-        loc = await load_localization_main(value)
-        await state.update_data(lang=value, loc=loc)
+        loc = await load_localization(value)
+        await state.update_data(lang=value, loc_user=loc)
 
     if not loc:
         return
 
     text: Any | str = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'text',
+            getattr(loc, "default", {}),
+            "text",
             {}),
         key,
-        '')
+        "")
     keyboard_data: Any | list[Any] = getattr(
         getattr(
-            getattr(loc, 'default', {}),
-            'keyboard',
+            getattr(loc, "default", {}),
+            "keyboard",
             {}),
         key,
         [])
@@ -174,14 +175,14 @@ async def option(
     try:
         await callback.message.edit_text(
             text=text,
-            parse_mode='HTML',
+            parse_mode="HTML",
             reply_markup=keyboard
         )
         update_dict: Dict[str, Any] = {key: value}
         await state.update_data(**update_dict)
         # await user_action_wrapper(
         #     tg_id=callback.from_user.id,
-        #     action='update',
+        #     action="update",
         #     field=key,
         #     value=value
         # )

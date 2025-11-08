@@ -1,23 +1,20 @@
 """
 Базовый middleware для Aiogram.
+
 Поддерживает:
 - подсчёт вызовов хэндлера,
 - удаление события после обработки,
 - передачу дополнительных параметров в data,
-- автоматическую проверку роли администратора.
+- автоматическую проверку роли администратора по переданной роли.
 """
 
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Literal, Optional
 
 from aiogram import BaseMiddleware
 
-from app.filters import AdminFilter
 from app.utils.logger import log_error
 
 from .loc_data import update_loc_data
-
-# Временный список администраторов для демонстрации
-TEMP_ADMINS: list[int] = [111111111, 1645736584]
 
 
 class MwBase(BaseMiddleware):
@@ -26,17 +23,20 @@ class MwBase(BaseMiddleware):
 
     Args:
         delete_event (bool): Удалять ли событие после обработки.
-        **extra_data: Любые дополнительные параметры для data.
+        role (Literal["user","admin"]): Роль для выбора локализации.
+        **extra_data: Дополнительные параметры для data.
     """
 
     def __init__(
         self,
         delete_event: bool = False,
-        **extra_data: Any,
+        role: Literal["user", "admin"] = "user",
+        **extra_data: Any
     ) -> None:
         self.counter: int = 0
         self.delete_event: bool = delete_event
-        self.extra_data: Dict[str, Any] = extra_data
+        self.role: Literal["user", "admin"] = role
+        self.extra_data: dict[str, Any] = extra_data
 
     async def __call__(
         self,
@@ -47,41 +47,40 @@ class MwBase(BaseMiddleware):
         """
         Основной метод middleware.
 
+        Загружает локализацию, обновляет данные и проверяет роль администратора.
+
         Args:
-            handler (Callable): Хэндлер события.
-            event (Optional[Any]): Событие от Telegram.
-            data (Optional[dict]): Словарь данных хэндлера.
+            handler (Callable): Обрабатывающий хэндлер.
+            event (Optional[Any]): Событие, например Message или CallbackQuery.
+            data (Optional[dict]): Словарь для передачи данных между middleware и хэндлером.
 
         Returns:
-            Любой результат работы хэндлера.
+            Any: Результат работы хэндлера.
         """
         data = data or {}
         self.counter += 1
-        data["counter"] = self.counter
 
-        # Добавляем дополнительные параметры в data
+        # Обновляем счётчик и добавляем дополнительные данные
+        data["counter"] = self.counter
         data.update(self.extra_data)
 
-        # Обновляем языковые данные пользователя
-        await update_loc_data(data, event)
-
-        # Проверяем роль администратора и добавляем в data
-        if event:
-            role: Dict[str, Any] | bool = await AdminFilter()(event)
-            data["admin_role"] = role
+        # Загружаем локализацию в зависимости от роли
+        await update_loc_data(data, event, role=self.role)
 
         try:
+            # Вызываем хэндлер
             result: Any = await handler(event, data)
 
-            # Удаляем событие, если нужно
+            # Удаляем событие после обработки, если включено
             if self.delete_event and event is not None and hasattr(
-                event, "delete"
-            ):
+                    event, "delete"):
                 try:
                     await event.delete()
                 except Exception:
+                    # Игнорируем ошибки удаления события
                     pass
 
             return result
         except Exception as e:
+            # Логируем ошибки обработки
             await log_error(event, error=e)
