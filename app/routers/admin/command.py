@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, Message
 
 from app.filters import AdminFilter, ChatTypeFilter
 from app.services.keyboards import keyboard_dynamic
-from app.utils.logger import log
+from app.services.logger import log
 
 router = Router()
 
@@ -40,7 +40,7 @@ def admin_command(
 
 
 @admin_command(Command("admin"))
-async def admin_start(
+async def start(
     message: Message,
     state: FSMContext,
     role: str

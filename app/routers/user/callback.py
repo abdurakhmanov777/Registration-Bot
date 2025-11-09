@@ -9,7 +9,7 @@ import app.services.keyboards as kb
 from app.config import CALLBACK_MAIN, CALLBACK_SELECT
 from app.filters import ChatTypeFilter
 from app.services.localization import Localization, load_localization
-from app.utils.logger import log
+from app.services.logger import log
 
 router = Router()
 
