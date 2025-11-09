@@ -6,13 +6,11 @@
 """
 
 from .engine import async_session, engine
-from .init_db import async_main
+from .init_db import init_db
 from .models import Admin, Base, Data, User
 
 __all__: list[str] = [
-    "engine",
-    "async_session",
-    "async_main",
+    "init_db",
     "Base",
     "Admin",
     "User",

@@ -7,7 +7,7 @@ from typing import Any, Dict
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import SimpleEventIsolation
 
-from app.core.middleware import mw
+from app.core.bot.middleware import mw
 from app.routers import (admin_callback, admin_command, admin_message,
                          user_callback, user_command, user_message)
 

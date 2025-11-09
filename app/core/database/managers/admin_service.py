@@ -3,8 +3,8 @@ from typing import Tuple
 from sqlalchemy import Result, delete, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.database.engine import async_session
-from app.database.models.admin import Admin
+from app.core.database.engine import async_session
+from app.core.database.models.admin import Admin
 
 
 class AdminService:

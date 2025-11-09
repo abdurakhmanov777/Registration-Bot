@@ -2,7 +2,7 @@
 Пакет моделей базы данных.
 
 Импортирует все основные ORM-модели и задаёт __all__ для удобного
-импорта через from app.database.models import *
+импорта через from app.core.database.models import *
 """
 
 from .admin import Admin

@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional
 
-from app.database.models.user import User
+from app.core.database.models.user import User
 from app.services.localization import Localization, load_localization
 from app.services.requests.requests import get_user_by_tg_id
 

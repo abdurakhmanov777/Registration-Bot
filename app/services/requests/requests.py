@@ -1,9 +1,9 @@
 from typing import Optional
 
-from app.database.managers.admin_service import AdminService
-from app.database.managers.user_service import UserService
-from app.database.models.admin import Admin
-from app.database.models.user import User
+from app.core.database.managers.admin_service import AdminService
+from app.core.database.managers.user_service import UserService
+from app.core.database.models.admin import Admin
+from app.core.database.models.user import User
 
 # ------------------------ User functions ------------------------
 
