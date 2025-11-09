@@ -2,8 +2,8 @@ import re
 
 from aiogram.enums import ChatAction
 from aiogram.types import BufferedInputFile, CallbackQuery, Message
-
 from app.keyboards import keyboards as kb
+
 from app.services.generator.generator import create_text_image
 # from app.services.requests import user_action_wrapper
 from app.utils.morphology import process_text
@@ -50,7 +50,11 @@ async def create_msg(
         else:
             start = loc.template.input.start
             formatted_text = await process_text(text, 'винительный', False)
-            text_msg = f'{start[0]}{formatted_text}{start[1]}{current.format}{start[2]}'
+            text_msg = f'{
+                start[0]}{formatted_text}{
+                start[1]}{
+                current.format}{
+                start[2]}'
             keyboard = kb.multi_back
 
     else:
