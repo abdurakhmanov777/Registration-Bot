@@ -20,6 +20,3 @@ def get_status_phrase(code: int) -> str:
         if code in HTTPStatus._value2member_map_
         else "Unknown"
     )
-
-
-__all__ = ["get_status_phrase"]
