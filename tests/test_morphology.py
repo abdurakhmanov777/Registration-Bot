@@ -5,14 +5,12 @@ from typing import Iterator
 
 import pytest
 
+from app.config.paths import BASE_DIR
 from app.utils.morphology.inflection import inflect_text
 from tests.test_cases import test_cases
 
 # Настройка пути к корню проекта
-BASE_DIR: str = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../')
-)
-sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, str(BASE_DIR))
 
 
 pytest_plugins = 'pytest_asyncio'
