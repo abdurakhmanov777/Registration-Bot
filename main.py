@@ -2,7 +2,7 @@ import asyncio
 
 from loguru import logger
 
-from app.core.bot.runner import run_bot
+from app.core.runner import run_bot
 from app.database import async_main
 
 

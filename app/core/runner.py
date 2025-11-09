@@ -7,10 +7,10 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from loguru import logger
 
-from app.core.bot.commands import register_bot_commands
-from app.core.bot.dispatcher import setup_dispatcher
-from app.core.bot.factory import create_bot
-from app.core.bot.logging_config import configure_logging
+from .commands import register_bot_commands
+from .dispatcher import setup_dispatcher
+from .factory import create_bot
+from .logging_config import configure_logging
 
 
 async def run_bot() -> None:
