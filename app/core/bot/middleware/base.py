@@ -13,7 +13,7 @@ from typing import Any, Awaitable, Callable, Literal, Optional
 from aiogram import BaseMiddleware
 
 from app.services.localization import update_loc_data
-from app.utils.logger import log_error
+from app.services.logger import log_error
 
 
 class MwBase(BaseMiddleware):
