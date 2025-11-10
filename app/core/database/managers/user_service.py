@@ -3,8 +3,7 @@ from typing import Tuple
 from sqlalchemy import Result, delete, select, update
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.core.database import async_session
-from app.core.database import User
+from app.core.database import User, async_session
 
 
 class UserService:
