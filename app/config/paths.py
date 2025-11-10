@@ -1,45 +1,47 @@
 """
-Пути к директориям и ресурсам проекта
+Пути к директориям и ресурсам проекта.
 """
 
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 
+# Корневая директория проекта
 BASE_DIR: Path = Path(__file__).parent.parent.parent
 
-# Загрузка переменных окружения
+# Загрузка переменных окружения из .env
 load_dotenv()
 
-# ------------------------------------------------------------
-# Основные директории проекта
-# ------------------------------------------------------------
+# Директории с ассетами
 ASSETS_DIR: Path = BASE_DIR / "app" / "assets"
-IMAGES_DIR: Path = ASSETS_DIR / "images"
-FONTS_DIR: Path = ASSETS_DIR / "fonts"
-DOCUMENTS_DIR: Path = ASSETS_DIR / "documents"
+IMAGES_DIR: Path = ASSETS_DIR / "images"        # Изображения
+FONTS_DIR: Path = ASSETS_DIR / "fonts"          # Шрифты
+DOCUMENTS_DIR: Path = ASSETS_DIR / "documents"  # Документы
+
+# Директории локализаций
 LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "locales" / "user"
 LOCALIZATIONS_ADMIN_DIR: Path = ASSETS_DIR / "locales" / "admin"
-LOCALIZATIONS_DIR: Path = ASSETS_DIR / "locales" / "user"
 
-# Фоновое изображение
-IMAGE_PATH: Path = IMAGES_DIR / os.getenv("IMAGE_NAME", "background.png")
+# Пути к основным файлам проекта
+IMAGE_PATH: Path = IMAGES_DIR / os.getenv(
+    "IMAGE_NAME", "background.png"
+)  # Фоновое изображение
 
-# Шрифт для текста
-FONT_PATH: Path = FONTS_DIR / os.getenv("FONT_NAME", "ALS_Sector_Bold.ttf")
+FONT_PATH: Path = FONTS_DIR / os.getenv(
+    "FONT_NAME", "ALS_Sector_Bold.ttf"
+)  # Шрифт для текста
 
-# Анкета гостя
-GUEST_PATH: Path = DOCUMENTS_DIR / os.getenv("GUEST_PATH", "Анкета_гостя.pdf")
+GUEST_PATH: Path = DOCUMENTS_DIR / os.getenv(
+    "GUEST_PATH", "Анкета_гостя.pdf"
+)  # Анкета гостя
 
-# Расписка участника
 PARTICIPANT_PATH: Path = DOCUMENTS_DIR / os.getenv(
     "PARTICIPANT_PATH", "Расписка_участника.pdf"
-)
+)  # Расписка участника
 
 # Файлы логирования
-LOG_FILE: Path = BASE_DIR / "logs" / "app.log"
-LOG_ERROR_FILE: Path = BASE_DIR / "logs" / "error.log"
+LOG_FILE: Path = BASE_DIR / "logs" / "app.log"        # Основной лог
+LOG_ERROR_FILE: Path = BASE_DIR / "logs" / "error.log"  # Лог ошибок
 
-# Файл настроек googlsheets
+# Файл с учетными данными Google Sheets
 GSHEET_CREDS: Path = BASE_DIR / "credentials" / "creds.json"
