@@ -1,8 +1,11 @@
 from typing import Any, Literal, Optional
 
+from app.core.database import async_session
+from app.core.database.managers.user import UserManager
 from app.core.database.models import User
 from app.services.localization import Localization, load_localization
-from app.services.requests.requests import get_user_by_tg_id
+
+# from app.services.requests.requests import get_user_by_tg_id
 
 
 async def update_loc_data(
@@ -41,10 +44,12 @@ async def update_loc_data(
     lang: str = "ru"
     if event and role == "user":
         tg_id: Optional[int] = getattr(event.from_user, "id", None)
-        user: Optional[User] = await get_user_by_tg_id(
-            tg_id
-        ) if tg_id else None
-        if user and user.lang:
+        async with async_session() as session:
+            user_manager = UserManager(session)
+            user: User | None = await user_manager.get(
+                tg_id
+            ) if tg_id else None
+        if user:
             lang = user.lang
 
     # Загружаем локализацию и обновляем состояние
