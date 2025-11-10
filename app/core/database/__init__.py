@@ -5,7 +5,7 @@
 инициализацию базы данных и все модели.
 """
 
-from .main import init_db
+from .init_db import init_db
 from .models import Admin, Base, Data, User
 
 __all__: list[str] = [
