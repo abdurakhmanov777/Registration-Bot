@@ -13,9 +13,10 @@ async def main() -> None:
     """
     Основная функция приложения.
 
-    Последовательность действий:
-        1. Инициализация базы данных.
-        2. Запуск Telegram-бота.
+    Выполняет:
+        - Инициализацию базы данных
+        - Запуск Telegram-бота
+        - Обработку исключений и корректное завершение
     """
     try:
         # Инициализация базы данных
@@ -24,14 +25,16 @@ async def main() -> None:
         # Запуск бота
         await run_bot()
 
-    except asyncio.CancelledError:
-        logger.info("Главный цикл отменен (CancelledError)")
-    except KeyboardInterrupt:
-        logger.info("Главный цикл прерван пользователем (Ctrl+C)")
+    except (asyncio.CancelledError, KeyboardInterrupt):
+        logger.warning("Главный цикл остановлен")
+
     except Exception as error:
+        # Логирование аварийного завершения приложения
         logger.exception(f"Аварийное завершение приложения: {error}")
+
     finally:
-        logger.info("Приложение корректно завершило работу")
+        # Сообщение о завершении работы приложения
+        logger.debug("Приложение завершило работу корректно")
 
 
 if __name__ == "__main__":
