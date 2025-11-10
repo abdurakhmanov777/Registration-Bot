@@ -4,13 +4,16 @@
 Поддерживает:
 - подсчёт вызовов хэндлера,
 - удаление события после обработки,
-- передачу дополнительных параметров в data,
-- автоматическую проверку роли администратора по переданной роли.
+- передачу доп. параметров в data,
+- проверку роли администратора,
+- удаление сообщений с неподдерж. типами,
+- динамическое управление разрешёнными типами.
 """
 
-from typing import Any, Awaitable, Callable, Literal, Optional
+from typing import Any, Awaitable, Callable, Literal, Optional, Set
 
 from aiogram import BaseMiddleware
+from aiogram.types import ContentType, Message
 
 from app.services.localization import update_loc_data
 from app.services.logger import log_error
@@ -21,21 +24,27 @@ class MwBase(BaseMiddleware):
     Базовый middleware для обработки событий.
 
     Args:
-        delete_event (bool): Удалять ли событие после обработки.
-        role (Literal["user","admin"]): Роль для выбора локализации.
-        **extra_data: Дополнительные параметры для data.
+        delete_event (bool): Удалять событие после обработки.
+        role (Literal["user","admin"]): Роль для локализации.
+        allowed_types (Optional[Set[str]]): Разрешённые типы сообщений.
+        **extra_data: Доп. параметры для передачи в data.
     """
 
     def __init__(
         self,
         delete_event: bool = False,
         role: Literal["user", "admin"] = "user",
-        **extra_data: Any
+        allowed_types: Optional[Set[str]] = None,
+        **extra_data: Any,
     ) -> None:
         self.counter: int = 0
         self.delete_event: bool = delete_event
         self.role: Literal["user", "admin"] = role
         self.extra_data: dict[str, Any] = extra_data
+        # Разрешённые типы сообщений
+        self.allowed_types: Set[str] = {ContentType.TEXT}
+        if allowed_types:
+            self.allowed_types.update(allowed_types)
 
     async def __call__(
         self,
@@ -46,20 +55,37 @@ class MwBase(BaseMiddleware):
         """
         Основной метод middleware.
 
-        Загружает локализацию, обновляет данные и проверяет роль администратора.
+        Загружает локализацию, обновляет данные и проверяет роль.
+        Удаляет сообщения с неподдерж. типами.
 
         Args:
-            handler (Callable): Обрабатывающий хэндлер.
-            event (Optional[Any]): Событие, например Message или CallbackQuery.
-            data (Optional[dict]): Словарь для передачи данных между middleware и хэндлером.
+            handler (Callable[[Any, dict], Awaitable[Any]]): Хэндлер.
+            event (Optional[Any]): Событие Message или CallbackQuery.
+            data (Optional[dict[str, Any]]): Данные между middleware
+                и хэндлером.
 
         Returns:
             Any: Результат работы хэндлера.
         """
+        if event is None:
+            return await handler(event, data or {})
+
+        # Фильтруем сообщения по разрешённым типам
+        if isinstance(
+            event,
+            Message
+        ) and event.content_type not in self.allowed_types:
+            try:
+                await event.delete()
+            except Exception:
+                pass
+            return None
+
+        # Инициализация data
         data = data or {}
         self.counter += 1
 
-        # Обновляем счётчик и добавляем дополнительные данные
+        # Обновляем счётчик и добавляем доп. данные
         data["counter"] = self.counter
         data.update(self.extra_data)
 
@@ -71,15 +97,13 @@ class MwBase(BaseMiddleware):
             result: Any = await handler(event, data)
 
             # Удаляем событие после обработки, если включено
-            if self.delete_event and event is not None and hasattr(
-                    event, "delete"):
+            if self.delete_event and hasattr(event, "delete"):
                 try:
                     await event.delete()
                 except Exception:
-                    # Игнорируем ошибки удаления события
                     pass
 
             return result
         except Exception as e:
-            # Логируем ошибки обработки
+            # Логируем ошибки
             await log_error(event, error=e)
