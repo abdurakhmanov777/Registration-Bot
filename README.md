@@ -2,6 +2,15 @@
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Aiogram](https://img.shields.io/badge/aiogram-v3.0-green)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-blue)
+![aiosqlite](https://img.shields.io/badge/aiosqlite-0.19-lightgrey)
+![Loguru](https://img.shields.io/badge/Loguru-0.7-orange)
+![python-dotenv](https://img.shields.io/badge/python--dotenv-1.0-green)
+![pymorphy3](https://img.shields.io/badge/pymorphy3-0.10-purple)
+![Pillow](https://img.shields.io/badge/Pillow-10.0-red)
+![gspread](https://img.shields.io/badge/gspread-5.0-blue)
+
+
 
 **BAS Trampoline Night** — это Telegram-бот для организации и управления регистрацией на **Батутную ночь**.
 Бот позволяет пользователям регистрироваться на мероприятие, а администраторам управлять пользователями через удобную **админ-панель** и отправлять массовые рассылки.
