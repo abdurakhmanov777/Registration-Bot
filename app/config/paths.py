@@ -37,8 +37,9 @@ PARTICIPANT_PATH: Path = DOCUMENTS_DIR / os.getenv(
     "PARTICIPANT_PATH", "Расписка_участника.pdf"
 )
 
-# Файл логирования
+# Файлы логирования
 LOG_FILE: Path = BASE_DIR / "logs" / "app.log"
+LOG_ERROR_FILE: Path = BASE_DIR / "logs" / "error.log"
 
 # Файл настроек googlsheets
 GSHEET_CREDS: Path = BASE_DIR / "credentials" / "creds.json"
