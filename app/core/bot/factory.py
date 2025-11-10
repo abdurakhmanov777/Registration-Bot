@@ -1,5 +1,5 @@
 """
-Создание экземпляра Telegram-бота и очистка вебхуков.
+Модуль для создания экземпляра Telegram-бота и очистки вебхуков.
 """
 
 from aiogram import Bot
@@ -11,15 +11,28 @@ from app.config import BOT_TOKEN
 
 async def create_bot() -> Bot:
     """
-    Создает экземпляр Bot и очищает старые вебхуки.
+    Создает экземпляр Telegram-бота и очищает старые вебхуки.
+
+    Функция:
+        - Создает объект Bot с HTML-парсингом по умолчанию.
+        - Удаляет старые вебхуки.
+        - Сбрасывает очередь обновлений до последнего.
 
     Returns:
-        Bot: Экземпляр бота с очищенной очередью обновлений.
+        Bot: Экземпляр Telegram-бота с очищенными вебхуками.
     """
-    bot = Bot(
+    # Создаем объект бота с HTML-разметкой по умолчанию
+    bot: Bot = Bot(
         token=str(BOT_TOKEN),
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML
+        )
     )
+
+    # Удаляем старые вебхуки
     await bot.delete_webhook()
+
+    # Сбрасываем очередь обновлений, чтобы не получать старые апдейты
     await bot.get_updates(offset=-1)
+
     return bot

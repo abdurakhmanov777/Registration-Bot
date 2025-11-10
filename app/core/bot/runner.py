@@ -1,5 +1,5 @@
 """
-Модуль запуска Telegram-бота.
+Модуль для инициализации и запуска Telegram-бота с polling.
 """
 
 from typing import Optional
@@ -15,7 +15,7 @@ from .factory import create_bot
 
 async def run_bot() -> None:
     """
-    Инициализация и запуск Telegram-бота.
+    Асинхронная инициализация и запуск Telegram-бота.
 
     Последовательность действий:
         1. Создание экземпляра бота.
@@ -27,10 +27,10 @@ async def run_bot() -> None:
     bot: Optional[Bot] = None
 
     try:
-        # Создание экземпляра бота
+        # Создаем экземпляр бота
         bot = await create_bot()
 
-        # Регистрация команд бота
+        # Регистрируем команды бота
         await register_bot_commands(bot)
 
         # Настройка диспетчера
@@ -47,6 +47,7 @@ async def run_bot() -> None:
             bot_info: User = await bot.get_me()
             logger.debug(f"Бот @{bot_info.username} запущен")
 
+        # Регистрируем колбэк запуска
         dp.startup.register(on_startup)
 
         # Запуск polling
@@ -56,7 +57,7 @@ async def run_bot() -> None:
         logger.exception(f"Ошибка при запуске бота: {error}")
 
     finally:
-        # Закрытие сессии бота после завершения
+        # Закрываем сессию бота после завершения
         if bot:
             try:
                 await bot.session.close()
