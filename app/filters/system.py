@@ -1,35 +1,40 @@
-"""
-Фильтры для проверки системных состояний Telegram-бота.
+from typing import Dict, Union
 
-Содержит фильтр SystemBlockFilter, который срабатывает, если бот
-находится в режиме технического обслуживания или регистрация закрыта.
-"""
-
-from __future__ import annotations
-
-from typing import Union
-
-from aiogram.filters import Filter
+from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery, Message
 
 # Глобальные флаги состояния бота
-MAINTENANCE_MODE: bool = False
-REGISTRATION_CLOSED: bool = True
+FLAG_BOT: bool = False
+FLAG_REG: bool = False
 
 
-class SystemBlockFilter(Filter):
+class SystemBlockFilter(BaseFilter):
     """
     Фильтр для проверки активных блокировок бота.
 
-    Срабатывает, если активен один из флагов:
-    - MAINTENANCE_MODE: бот на техобслуживании.
-    - REGISTRATION_CLOSED: регистрация закрыта.
+    Возвращает словарь с активными флагами, если есть блокировка,
+    иначе возвращает False.
     """
+
+    def __init__(
+        self,
+        flag_bot: bool = FLAG_BOT,
+        flag_reg: bool = FLAG_REG,
+    ) -> None:
+        """
+        Инициализация фильтра.
+
+        Args:
+            flag_bot (bool): Флаг техобслуживания.
+            flag_reg (bool): Флаг закрытой регистрации.
+        """
+        self.flag_bot: bool = flag_bot
+        self.flag_reg: bool = flag_reg
 
     async def __call__(
         self,
-        event: Union[Message, CallbackQuery],
-    ) -> bool:
+        event: Message | CallbackQuery,
+    ) -> Union[Dict[str, bool], bool]:
         """
         Проверяет наличие активной блокировки.
 
@@ -37,6 +42,12 @@ class SystemBlockFilter(Filter):
             event (Message | CallbackQuery): Событие от пользователя.
 
         Returns:
-            bool: True, если бот заблокирован.
+            dict[str, bool] | bool: Словарь с активными флагами, если
+            есть блокировка, иначе False.
         """
-        return MAINTENANCE_MODE or REGISTRATION_CLOSED
+        if self.flag_bot or self.flag_reg:
+            return {
+                "flag_bot": self.flag_bot,
+                "flag_reg": self.flag_reg,
+            }
+        return False

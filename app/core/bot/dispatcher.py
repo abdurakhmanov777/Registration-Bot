@@ -53,9 +53,9 @@ async def setup_dispatcher() -> Dispatcher:
 
     # Подключаем все роутеры к диспетчеру
     dp.include_routers(
-        admin_callback,
-        admin_command,
-        admin_message,
+        # admin_callback,
+        # admin_command,
+        # admin_message,
         intercept,
         user_callback,
         user_command,
