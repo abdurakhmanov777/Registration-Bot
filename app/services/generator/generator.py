@@ -1,26 +1,33 @@
+"""
+Модуль для работы с изображениями.
+
+Содержит функции для создания изображений с текстом поверх
+фонового изображения.
+"""
+
 from io import BytesIO
 from typing import Literal
 
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ImageFile import ImageFile
 
-from app.config import FONT_PATH, IMAGE_PATH
+from app.config import BACKGROUND_PATH, FONT_PATH
 
 
-async def create_text_image(
+async def generate_text_image(
     text: str,
 ) -> BytesIO:
     """
     Создает изображение с текстом поверх фонового изображения.
 
-    Args:
+    Аргументы:
         text (str): Текст, который будет добавлен на изображение.
 
-    Returns:
+    Возвращает:
         BytesIO: Буфер с PNG-изображением.
     """
-    # Открываем фоновое изображение
-    image: ImageFile = Image.open(IMAGE_PATH)
+    # Загружаем фоновое изображение
+    image: ImageFile = Image.open(BACKGROUND_PATH)
     draw: ImageDraw.ImageDraw = ImageDraw.Draw(image)
 
     # Подбираем размер шрифта относительно высоты изображения
@@ -32,20 +39,28 @@ async def create_text_image(
 
     # Вычисляем координаты для центрирования текста
     bbox: tuple[float, float, float, float] = draw.textbbox(
-        (0, 0), text, font=font
+        (0, 0),
+        text,
+        font=font
     )
-    text_x: float = (image.width - (bbox[2] - bbox[0])) / 2
-    text_y: float = (image.height - (bbox[3] - bbox[1])) * 0.4
+    text_width: float = bbox[2] - bbox[0]
+    text_height: float = bbox[3] - bbox[1]
+    text_x: float = (image.width - text_width) / 2
+    text_y: float = (image.height - text_height) * 0.4
 
     # Цвет текста (белый)
     font_color: tuple[Literal[255], Literal[255], Literal[255]] = (
         255, 255, 255
     )
-    draw.text((text_x, text_y), text, font=font, fill=font_color)
+    draw.text(
+        (text_x, text_y),
+        text,
+        font=font,
+        fill=font_color
+    )
 
-    # Сохраняем изображение в буфер
+    # Сохраняем изображение в буфер и возвращаем
     buffer = BytesIO()
     image.save(buffer, format='PNG')
     buffer.seek(0)
     return buffer
-

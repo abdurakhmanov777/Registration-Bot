@@ -4,6 +4,7 @@
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Корневая директория проекта
@@ -23,7 +24,7 @@ LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "locales" / "user"
 LOCALIZATIONS_ADMIN_DIR: Path = ASSETS_DIR / "locales" / "admin"
 
 # Пути к основным файлам проекта
-IMAGE_PATH: Path = IMAGES_DIR / os.getenv(
+BACKGROUND_PATH: Path = IMAGES_DIR / os.getenv(
     "IMAGE_NAME", "background.png"
 )  # Фоновое изображение
 
