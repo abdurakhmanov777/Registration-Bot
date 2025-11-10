@@ -67,7 +67,7 @@ async def main(
     keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
 
     # Отправляем сообщение
-    await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
+    await message.answer(text=text, reply_markup=keyboard)
     await log(message)
 
 
@@ -102,5 +102,5 @@ async def user_id(
     keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
 
     text: str = f"{text_prefix}{message.chat.id}{text_suffix}"
-    await message.answer(text=text, parse_mode="HTML", reply_markup=keyboard)
+    await message.answer(text=text, reply_markup=keyboard)
     await log(message)

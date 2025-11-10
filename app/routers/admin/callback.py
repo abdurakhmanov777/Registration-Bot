@@ -101,7 +101,6 @@ async def main(
     # Редактируем сообщение с текстом и клавиатурой
     await callback.message.edit_text(
         text,
-        parse_mode='HTML',
         reply_markup=keyboard
     )
 

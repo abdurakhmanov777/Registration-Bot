@@ -137,7 +137,6 @@ async def data_sending(
         msg: Message = await message.answer_photo(
             photo=BufferedInputFile(buffer.read(), filename="code.png"),
             caption=caption,
-            parse_mode='HTML'
         )
 
         await bot.pin_chat_message(

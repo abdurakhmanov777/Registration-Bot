@@ -72,7 +72,6 @@ async def start(
     # Отправляем сообщение с текстом и клавиатурой
     await message.answer(
         text=text,
-        parse_mode="HTML",
         reply_markup=keyboard
     )
 

@@ -81,7 +81,6 @@ async def main(
 
     await callback.message.edit_text(
         text,
-        parse_mode="HTML",
         reply_markup=keyboard
     )
     await log(callback)
@@ -124,7 +123,6 @@ async def select(
 
     await callback.message.edit_text(
         text=text,
-        parse_mode="HTML",
         reply_markup=keyboard
     )
     await log(callback)
@@ -175,7 +173,6 @@ async def option(
     try:
         await callback.message.edit_text(
             text=text,
-            parse_mode="HTML",
             reply_markup=keyboard
         )
         update_dict: Dict[str, Any] = {key: value}
