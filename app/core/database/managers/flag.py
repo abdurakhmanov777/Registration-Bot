@@ -22,7 +22,10 @@ class FlagManager:
         """
         self.session: AsyncSession = session
 
-    async def get(self, name: str) -> Optional[Flag]:
+    async def get(
+        self,
+        name: str
+    ) -> Optional[Flag]:
         """
         Получить флаг по имени.
 
@@ -86,7 +89,10 @@ class FlagManager:
         await self.session.commit()
         return True
 
-    async def delete(self, name: str) -> bool:
+    async def delete(
+        self,
+        name: str
+    ) -> bool:
         """
         Удалить флаг по имени.
 
@@ -104,7 +110,9 @@ class FlagManager:
         await self.session.commit()
         return True
 
-    async def list_all(self) -> Sequence[Flag]:
+    async def list_all(
+        self
+    ) -> Sequence[Flag]:
         """
         Получить список всех флагов.
 

@@ -23,7 +23,10 @@ class AdminManager:
         """
         self.session: AsyncSession = session
 
-    async def get(self, tg_id: int) -> Optional[Admin]:
+    async def get(
+        self,
+        tg_id: int
+    ) -> Optional[Admin]:
         """
         Получить администратора по tg_id.
 
@@ -80,7 +83,11 @@ class AdminManager:
         await self.session.refresh(admin)
         return admin
 
-    async def push_state(self, tg_id: int, new_state: str) -> bool:
+    async def push_state(
+        self,
+        tg_id: int,
+        new_state: str
+    ) -> bool:
         """
         Добавить состояние в стек state администратора.
 
@@ -101,7 +108,10 @@ class AdminManager:
         await self.session.commit()
         return True
 
-    async def pop_state(self, tg_id: int) -> Optional[str]:
+    async def pop_state(
+        self,
+        tg_id: int
+    ) -> Optional[str]:
         """
         Извлечь последнее состояние из стека state.
 
@@ -124,7 +134,10 @@ class AdminManager:
         await self.session.commit()
         return last_state
 
-    async def peek_state(self, tg_id: int) -> Optional[str]:
+    async def peek_state(
+        self,
+        tg_id: int
+    ) -> Optional[str]:
         """
         Посмотреть последнее состояние в стеке без удаления.
 
@@ -141,7 +154,11 @@ class AdminManager:
         stack: List[str] = admin.state.split(",") if admin.state else []
         return stack[-1] if stack else None
 
-    async def update_text(self, tg_id: int, new_text: str) -> bool:
+    async def update_text(
+        self,
+        tg_id: int,
+        new_text: str
+    ) -> bool:
         """
         Обновить текст администратора.
 
@@ -160,7 +177,10 @@ class AdminManager:
         await self.session.commit()
         return True
 
-    async def delete(self, tg_id: int) -> bool:
+    async def delete(
+        self,
+        tg_id: int
+    ) -> bool:
         """
         Удалить администратора из базы.
 
