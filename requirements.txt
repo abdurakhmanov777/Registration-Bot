@@ -7,7 +7,6 @@ python-dotenv
 pymorphy3
 pytest
 pytest-asyncio
-segno
 pillow
 gspread
 # pytz
