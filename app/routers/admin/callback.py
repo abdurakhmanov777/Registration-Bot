@@ -26,7 +26,9 @@ def admin_callback(
         Callable[[Callable[..., Any]], Callable[..., Any]]:
         Декоратор для обработчика коллбека.
     """
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+    def decorator(
+        func: Callable[..., Any]
+    ) -> Callable[..., Any]:
         return router.callback_query(
             ChatTypeFilter(chat_type=["private"]),
             AdminFilter(),

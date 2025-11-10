@@ -44,6 +44,7 @@ guard_router: Router = Router(name="guard_router")
 
 #     return decorator
 
+
 @guard_router.message(SystemBlockFilter(), F.text)
 async def handle_blocked_message(
     message: Message,
