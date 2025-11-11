@@ -1,4 +1,11 @@
-from typing import Any, Literal, Optional
+"""
+Универсальная обёртка для работы со стеком состояний пользователя.
+
+Содержит функцию manage_user_state для выполнения основных операций со
+стеком состояний: push, pop, peek, peekpush, popeek, clear и get_state.
+"""
+
+from typing import List, Literal, Optional, Union
 
 from app.core.database.engine import async_session
 from app.core.database.managers import UserManager
@@ -16,42 +23,65 @@ async def manage_user_state(
         "get_state",
     ] = "peek",
     new_state: Optional[str] = None,
-) -> Optional[Any]:
+) -> Union[bool, str, list[str], None]:
     """
-    Универсальная обёртка для работы со стеком состояний пользователя.
+    Управляет стеком состояний пользователя.
+
+    Args:
+        tg_id (int): Telegram ID пользователя.
+        action (Literal): Действие для выполнения со стеком состояния.
+            Доступные варианты:
+            - "push": добавить новое состояние;
+            - "pop": удалить последнее состояние;
+            - "peek": посмотреть текущее состояние;
+            - "peekpush": вернуть текущее и добавить новое состояние;
+            - "popeek": удалить последнее и вернуть предыдущее;
+            - "clear": очистить стек состояний;
+            - "get_state": вернуть весь стек состояний.
+        new_state (Optional[str]): Новое состояние для добавления.
+            Обязателен для действий "push" и "peekpush".
+
+    Returns:
+        Union[bool, str, list[str], None]: Результат выполнения действия.
+            - str: текущее состояние;
+            - list[str]: весь стек состояний;
+            - bool: успех операции clear;
+            - None: если стек пустой или отсутствует значение.
     """
     async with async_session() as session:
         manager = UserManager(session)
+
         if action in ("push", "peekpush") and new_state is None:
             raise ValueError(
-                f"Для действия '{action}' необходимо указать new_state.")
+                f"Для действия '{action}' необходимо указать new_state."
+            )
 
         if action == "push":
-            assert new_state is not None  # явно гарантируем тип
+            assert new_state is not None
             return await manager.push_state(tg_id, new_state)
 
-        elif action == "peekpush":
-            assert new_state is not None  # явно гарантируем тип
-            current: str | None = await manager.peek_state(tg_id)
+        if action == "peekpush":
+            assert new_state is not None
+            current_state: Optional[str] = await manager.peek_state(tg_id)
             await manager.push_state(tg_id, new_state)
-            return current
+            return current_state
 
-        elif action == "pop":
+        if action == "pop":
             return await manager.pop_state(tg_id)
 
-        elif action == "peek":
+        if action == "peek":
             return await manager.peek_state(tg_id)
 
-        elif action == "popeek":
-            last = await manager.pop_state(tg_id)
-            return await manager.peek_state(tg_id) or last
+        if action == "popeek":
+            last_state: str | None = await manager.pop_state(tg_id)
+            return await manager.peek_state(tg_id) or last_state
 
-        elif action == "clear":
-            await manager.clear_state(tg_id)  # если есть метод clear_state
+        if action == "clear":
+            await manager.clear_state(tg_id)
             return True
 
-        elif action == "get_state":
-            states = await manager.get_state(tg_id)
+        if action == "get_state":
+            states: List[str] = await manager.get_state(tg_id)
             return states or ["1"]
 
         raise ValueError(f"Неизвестное действие: {action!r}")
