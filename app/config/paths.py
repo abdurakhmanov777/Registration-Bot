@@ -1,5 +1,8 @@
 """
 Пути к директориям и ресурсам проекта.
+
+Определяет базовые директории, пути к ассетам, локализациям,
+логам и учетным данным Google Sheets.
 """
 
 import os
@@ -41,7 +44,7 @@ PARTICIPANT_PATH: Path = DOCUMENTS_DIR / os.getenv(
 )  # Расписка участника
 
 # Файлы логирования
-LOG_FILE: Path = BASE_DIR / "logs" / "app.log"        # Основной лог
+LOG_FILE: Path = BASE_DIR / "logs" / "app.log"          # Основной лог
 LOG_ERROR_FILE: Path = BASE_DIR / "logs" / "error.log"  # Лог ошибок
 
 # Файл с учетными данными Google Sheets

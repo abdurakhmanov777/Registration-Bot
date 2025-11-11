@@ -1,5 +1,8 @@
 """
 Основные настройки бота и приложения.
+
+Содержит конфигурацию токена бота, базы данных, часового пояса,
+администраторов, Google Sheets и основных команд.
 """
 
 import os
@@ -32,16 +35,17 @@ GSHEET_NAME: str = os.getenv("GSHEET_NAME", "")  # Имя таблицы
 GSHEET_PAGE: str = os.getenv("GSHEET_PAGE", "")  # Имя листа таблицы
 
 # Основные команды бота
-COMMAND_MAIN: Set[str] = {
-    "start", "help", "test", "admin"
-}
+COMMAND_MAIN: Set[str] = {"start", "help", "test", "admin"}
 
 # Основные callback-префиксы
 CALLBACK_MAIN: List[str] = [
-    "start", "settings", "info", "miniapp", "table", "admin"
+    "start",
+    "settings",
+    "info",
+    "miniapp",
+    "table",
+    "admin",
 ]
 
 # Callback-префиксы для выбора
-CALLBACK_SELECT: Set[str] = {
-    "lang"
-}
+CALLBACK_SELECT: Set[str] = {"lang"}
