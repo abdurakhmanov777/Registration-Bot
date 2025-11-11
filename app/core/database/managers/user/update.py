@@ -5,8 +5,6 @@
 в таблице User.
 """
 
-from typing import Optional
-
 from app.core.database.models import User
 
 from .crud import UserCRUD
@@ -30,10 +28,7 @@ class UserUpdate(UserCRUD):
         Returns:
             bool: True, если обновление прошло успешно, иначе False.
         """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            # Пользователь не найден
-            return False
+        user: User = await self._get_or_create(tg_id)
 
         user.fullname = fullname
 

@@ -9,6 +9,7 @@ from app.config import COMMAND_MAIN
 from app.filters import ChatTypeFilter
 from app.services.keyboards import keyboard_dynamic
 from app.services.logger import log
+from app.services.requests.user.state import manage_user_state
 
 router: Router = Router()
 
@@ -39,6 +40,27 @@ async def main(
     message: Message,
     state: FSMContext
 ) -> None:
+    print(await manage_user_state(
+        message.from_user.id,
+        "pop"
+    ))
+    print(await manage_user_state(
+        message.from_user.id,
+        "get_state"
+    ))
+    print(await manage_user_state(
+        message.from_user.id,
+        "push",
+        "2"
+    ))
+    print(await manage_user_state(
+        message.from_user.id,
+        "pop"
+    ))
+    print(await manage_user_state(
+        message.from_user.id,
+        "get_state"
+    ))
     """
     Обрабатывает основную команду пользователя.
 

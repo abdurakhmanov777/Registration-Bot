@@ -30,10 +30,7 @@ class UserState(UserCRUD):
         Returns:
             bool: True, если состояние добавлено, иначе False.
         """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            # Пользователь не найден
-            return False
+        user: User = await self._get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
         stack.append(new_state)
@@ -57,9 +54,7 @@ class UserState(UserCRUD):
             Optional[str]: Последнее состояние или None, если
                 стек пустой или пользователь не найден.
         """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            return None
+        user: User = await self._get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
         if not stack:
@@ -84,9 +79,24 @@ class UserState(UserCRUD):
             Optional[str]: Последнее состояние или None, если
                 стек пустой или пользователь не найден.
         """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            return None
+        user: User = await self._get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
         return stack[-1] if stack else None
+
+    async def get_state(
+        self,
+        tg_id: int
+    ) -> List[str]:
+        """
+        Получить весь стек состояний пользователя.
+
+        Args:
+            tg_id (int): Telegram ID пользователя.
+
+        Returns:
+            List[str]: Список состояний пользователя. Пустой список,
+                если пользователь не найден или стек пустой.
+        """
+        user: User = await self._get_or_create(tg_id)
+        return user.state.split(",") if user.state else []

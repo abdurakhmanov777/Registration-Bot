@@ -17,6 +17,30 @@ from .base import UserManagerBase
 class UserCRUD(UserManagerBase):
     """Класс для CRUD-операций с пользователями."""
 
+    async def _get_or_create(
+        self,
+        tg_id: int,
+        fullname: Optional[str] = None,
+        group: Optional[str] = None,
+        lang: str = "ru",
+        msg_id: int = 0,
+        column: Optional[int] = None,
+    ) -> User:
+        """
+        Получить пользователя или создать нового, если его нет.
+        """
+        user: User | None = await self.get(tg_id)
+        if user is None:
+            user = await self.create(
+                tg_id=tg_id,
+                fullname=fullname,
+                group=group,
+                lang=lang,
+                msg_id=msg_id,
+                column=column,
+            )
+        return user
+
     async def get(
         self,
         tg_id: int,
