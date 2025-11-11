@@ -35,7 +35,7 @@ GSHEET_NAME: str = os.getenv("GSHEET_NAME", "")  # Имя таблицы
 GSHEET_PAGE: str = os.getenv("GSHEET_PAGE", "")  # Имя листа таблицы
 
 # Основные команды бота
-COMMAND_MAIN: Set[str] = {"start", "help", "test", "admin"}
+COMMAND_MAIN: Set[str] = {"start", "test", "admin"}
 
 # Основные callback-префиксы
 CALLBACK_MAIN: List[str] = [

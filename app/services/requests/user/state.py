@@ -56,31 +56,31 @@ async def manage_user_state(
                 f"Для действия '{action}' необходимо указать new_state."
             )
 
-        if action == "push":
+        elif action == "push":
             assert new_state is not None
             return await manager.push_state(tg_id, new_state)
 
-        if action == "peekpush":
+        elif action == "peekpush":
             assert new_state is not None
             current_state: Optional[str] = await manager.peek_state(tg_id)
             await manager.push_state(tg_id, new_state)
             return current_state
 
-        if action == "pop":
+        elif action == "pop":
             return await manager.pop_state(tg_id)
 
-        if action == "peek":
+        elif action == "peek":
             return await manager.peek_state(tg_id)
 
-        if action == "popeek":
+        elif action == "popeek":
             last_state: str | None = await manager.pop_state(tg_id)
             return await manager.peek_state(tg_id) or last_state
 
-        if action == "clear":
+        elif action == "clear":
             await manager.clear_state(tg_id)
             return True
 
-        if action == "get_state":
+        elif action == "get_state":
             states: List[str] = await manager.get_state(tg_id)
             return states or ["1"]
 

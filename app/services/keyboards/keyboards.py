@@ -10,6 +10,11 @@ help = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
     callback_data='delete'
 )]])
 
+kb_delete = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+    text='Закрыть окно',
+    callback_data='delete'
+)]])
+
 state_99 = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text='Отправить данные',

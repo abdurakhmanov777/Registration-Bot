@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, Message
 
 from app.config import COMMAND_MAIN
 from app.filters import ChatTypeFilter
-from app.services.keyboards import keyboard_dynamic
+from app.services.keyboards import help, kb_delete
 from app.services.logger import log
 from app.services.requests.user.state import manage_user_state
 
@@ -35,7 +35,27 @@ def user_command(
     return decorator
 
 
-@user_command(*COMMAND_MAIN)
+
+# @router.message(Command('start'))
+# async def multi_cmd(message: Message, state: FSMContext):
+#     tg_id, bot_id, loc, state_db, old_msg_id = await update_state(message, state)
+
+#     if state_db == '100':
+#         await data_sending(tg_id, bot_id, message)
+#     elif state_db == '99':
+#         text_msg, keyboard = await data_output(tg_id, bot_id, loc)
+#         await message.answer(text=text_msg, parse_mode='HTML', reply_markup=keyboard)
+#     else:
+#         text_msg, keyboard = await create_msg(loc, state_db, tg_id, bot_id)
+#         await message.answer(text=text_msg, parse_mode='HTML', reply_markup=keyboard)
+
+#     if old_msg_id:
+#         try:
+#             await message.bot.delete_message(message.chat.id, old_msg_id)
+#         except:
+#             pass
+
+@user_command("start")
 async def main(
     message: Message,
     state: FSMContext
@@ -60,15 +80,16 @@ async def main(
     if not loc:
         return
 
-    # Получаем текст и данные клавиатуры через getattr
-    text: str = getattr(getattr(loc, "default").text, key)
-    keyboard_data: Any = getattr(getattr(loc, "default").keyboard, key)
+    text = loc.user_1.text
+    # # Получаем текст и данные клавиатуры через getattr
+    # text: str = getattr(getattr(loc, "default").text, key)
+    # keyboard_data: Any = getattr(getattr(loc, "default").keyboard, key)
 
-    # Создаём клавиатуру
-    keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
+    # # Создаём клавиатуру
+    # keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
 
     # Отправляем сообщение
-    await message.answer(text=text, reply_markup=keyboard)
+    await message.answer(text=text)
     await log(message)
 
 
@@ -90,18 +111,35 @@ async def user_id(
     if not loc:
         return
 
-    # Шаблон текста через getattr
-    template: tuple[str, str] = getattr(
-        getattr(loc, "template", {}), "id", ("", "")
-    )
-    text_prefix, text_suffix = template
-
-    # Данные клавиатуры через getattr
-    keyboard_data: list[Any] = getattr(
-        getattr(getattr(loc, "default", {}), "keyboard", {}), "delete", []
-    )
-    keyboard: InlineKeyboardMarkup = await keyboard_dynamic(keyboard_data)
+    text_prefix, text_suffix = loc.template.id
 
     text: str = f"{text_prefix}{message.chat.id}{text_suffix}"
-    await message.answer(text=text, reply_markup=keyboard)
+    await message.answer(
+        text=text,
+        reply_markup=kb_delete
+    )
+    await log(message)
+
+
+@user_command("help")
+async def cmd_help(
+    message: Message,
+    state: FSMContext
+):
+    """
+    Отправляет контакты админов в виде кнопок.
+
+    Args:
+        message (Message): Входящее сообщение Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+    """
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Any = user_data.get("loc_user")
+    if not loc:
+        return
+
+    await message.answer(
+        text=loc.help,
+        reply_markup=help
+    )
     await log(message)

@@ -32,7 +32,7 @@ class UserState(UserCRUD):
         Returns:
             bool: True, если состояние добавлено, иначе False.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
         stack.append(new_state)
@@ -57,7 +57,7 @@ class UserState(UserCRUD):
             Optional[str]: Последнее состояние или None, если
                 стек пустой или пользователь не найден.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
         if not stack:
@@ -85,7 +85,7 @@ class UserState(UserCRUD):
             Optional[str]: Последнее состояние или None, если
                 стек пустой или пользователь не найден.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
 
         stack: List[str] = user.state.split(",") if user.state else []
 
@@ -105,7 +105,7 @@ class UserState(UserCRUD):
             List[str]: Список состояний пользователя. Пустой список,
                 если пользователь не найден или стек пустой.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
 
         return user.state.split(",") if user.state else []
 
@@ -123,7 +123,7 @@ class UserState(UserCRUD):
         Returns:
             bool: True после успешного сброса.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
         user.state = "1"
 
         flag_modified(user, "state")

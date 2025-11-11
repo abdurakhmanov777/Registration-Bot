@@ -18,7 +18,7 @@ from .base import UserManagerBase
 class UserCRUD(UserManagerBase):
     """Класс для CRUD-операций с пользователями."""
 
-    async def _get_or_create(
+    async def get_or_create(
         self,
         tg_id: int,
         fullname: Optional[str] = None,

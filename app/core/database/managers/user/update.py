@@ -28,7 +28,7 @@ class UserUpdate(UserCRUD):
         Returns:
             bool: True, если обновление прошло успешно, иначе False.
         """
-        user: User = await self._get_or_create(tg_id)
+        user: User = await self.get_or_create(tg_id)
 
         user.fullname = fullname
 
