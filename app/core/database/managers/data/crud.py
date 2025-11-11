@@ -38,12 +38,12 @@ class DataCRUD(DataManagerBase):
             result: Result[Tuple[Data]] = await self.session.execute(
                 select(Data).where(
                     Data.user_id == user_id,
-                    Data.key == key
+                    Data.key == key,
                 )
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            # Выводим сообщение об ошибке при получении данных
+            # Логируем ошибку при получении данных
             print(f"Ошибка при получении данных: {e}")
             return None
 
@@ -67,7 +67,7 @@ class DataCRUD(DataManagerBase):
         data = Data(
             user_id=user_id,
             key=key,
-            value=value
+            value=value,
         )
         # Добавляем запись в сессию
         self.session.add(data)

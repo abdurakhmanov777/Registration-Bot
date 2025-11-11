@@ -19,8 +19,7 @@ class DataManagerBase:
         Инициализация менеджера.
 
         Args:
-            session (AsyncSession): Асинхронная сессия для работы
-                с базой данных.
+            session (AsyncSession): Асинхронная сессия для работы с БД.
         """
-        # Сохраняем сессию для дальнейшей работы с БД
+        # Сохраняем сессию для дальнейшей работы с базой данных
         self.session: AsyncSession = session

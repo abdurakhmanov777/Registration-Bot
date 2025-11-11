@@ -38,6 +38,6 @@ class DataList(DataManagerBase):
             # Возвращаем все записи пользователя
             return result.scalars().all()
         except SQLAlchemyError as e:
-            # Выводим сообщение об ошибке при получении списка данных
+            # Логируем ошибку при получении списка данных
             print(f"Ошибка при получении списка данных: {e}")
             return []

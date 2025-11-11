@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AdminManagerBase:
-    """Базовый менеджер администраторов.
+    """
+    Базовый менеджер администраторов.
 
     Атрибуты:
         session (AsyncSession): Асинхронная сессия SQLAlchemy.
@@ -23,8 +24,7 @@ class AdminManagerBase:
         Инициализация менеджера.
 
         Args:
-            session (AsyncSession): Асинхронная сессия для работы
-                с базой данных.
+            session (AsyncSession): Асинхронная сессия для работы с БД.
         """
-        # Сохраняем сессию для дальнейшей работы с БД
+        # Сохраняем сессию для дальнейшей работы с базой данных
         self.session: AsyncSession = session

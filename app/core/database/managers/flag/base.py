@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class FlagManagerBase:
-    """Базовый класс для работы с таблицей Flag."""
+    """Базовый менеджер для работы с таблицей Flag."""
 
     def __init__(
         self,

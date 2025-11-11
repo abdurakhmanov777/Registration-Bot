@@ -1,7 +1,7 @@
 from typing import Any, Literal, Optional
 
 from app.core.database import async_session
-from app.core.database.managers.user import UserManager
+from app.core.database.managers import UserManager
 from app.core.database.models import User
 from app.services.localization import Localization, load_localization
 

@@ -1,8 +1,8 @@
 """
 CRUD-операции для работы с таблицей администраторов.
 
-Содержит методы для создания, получения и удаления
-администраторов в базе данных.
+Содержит методы для создания, получения и удаления администраторов
+в базе данных.
 """
 
 from typing import Optional, Tuple
@@ -23,7 +23,7 @@ class AdminCRUD(AdminManagerBase):
         tg_id: int,
     ) -> Optional[Admin]:
         """
-        Получить администратора по tg_id.
+        Получить администратора по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID администратора.
@@ -37,7 +37,7 @@ class AdminCRUD(AdminManagerBase):
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            # Выводим сообщение об ошибке при получении администратора
+            # Логируем ошибку при получении администратора
             print(f"Ошибка при получении администратора: {e}")
             return None
 
@@ -73,7 +73,7 @@ class AdminCRUD(AdminManagerBase):
             msg_id=msg_id,
             state="1",
         )
-        # Добавляем администратора в сессию
+        # Добавляем администратора в сессию и сохраняем изменения
         self.session.add(admin)
         await self.session.commit()
         await self.session.refresh(admin)
@@ -84,7 +84,7 @@ class AdminCRUD(AdminManagerBase):
         tg_id: int,
     ) -> bool:
         """
-        Удалить администратора по tg_id.
+        Удалить администратора по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID администратора.
@@ -94,7 +94,7 @@ class AdminCRUD(AdminManagerBase):
         """
         admin: Optional[Admin] = await self.get(tg_id)
         if not admin:
-            # Администратор не найден
+            # Администратор с указанным ID не найден
             return False
 
         await self.session.delete(admin)
