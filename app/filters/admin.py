@@ -20,8 +20,7 @@ ROLES: Dict[str, List[int]] = {
 
 
 class AdminFilter(BaseFilter):
-    """
-    Фильтр для проверки, является ли пользователь администратором.
+    """Фильтр для проверки, является ли пользователь администратором.
 
     Возвращает словарь с ролью, если пользователь найден,
     иначе возвращает False.
@@ -31,8 +30,7 @@ class AdminFilter(BaseFilter):
         self,
         roles: Optional[Dict[str, List[int]]] = None,
     ) -> None:
-        """
-        Инициализация фильтра.
+        """Инициализация фильтра.
 
         Args:
             roles (Optional[Dict[str, List[int]]]): Словарь ролей
@@ -45,24 +43,22 @@ class AdminFilter(BaseFilter):
         self,
         event: Message | CallbackQuery,
     ) -> Union[Dict[str, Any], bool]:
-        """
-        Проверяет роль пользователя.
+        """Проверяет роль пользователя.
 
         Args:
             event (Message | CallbackQuery): Событие от Telegram.
 
         Returns:
-            dict[str, Any] | bool: Словарь с ролью, если пользователь
-                найден, иначе False.
+            Union[Dict[str, Any], bool]: Словарь с ролью, если
+                пользователь найден, иначе False.
         """
-        # Получаем объект пользователя из события
-        from_user: Any | None = getattr(event, "from_user", None)
+        from_user: Optional[Any] = getattr(event, "from_user", None)
         if not from_user:
             return False
 
-        user_id: Any = from_user.id
+        user_id: int = from_user.id
         chat_id: Optional[int] = None
-        bot: Any | None = getattr(event, "bot", None)
+        bot: Optional[Any] = getattr(event, "bot", None)
 
         # Определяем chat_id в зависимости от типа события
         if isinstance(event, Message):
@@ -75,12 +71,12 @@ class AdminFilter(BaseFilter):
             return False
 
         # Проверяем локальные роли
-        for role, ids in self.roles.items():
-            if user_id in ids:
+        for role, user_ids in self.roles.items():
+            if user_id in user_ids:
                 return {"role": role}
 
         # Проверка через Telegram API
-        if bot:
+        if bot and chat_id is not None:
             try:
                 member: Any = await bot.get_chat_member(chat_id, user_id)
                 if member.status in {"administrator", "creator"}:
