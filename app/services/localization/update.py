@@ -1,17 +1,22 @@
-from typing import Any, Literal, Optional
+"""
+Модуль для обновления языковых данных пользователей и администраторов.
+
+Обеспечивает асинхронную загрузку локализации и обновление состояния
+хэндлера.
+"""
+
+from typing import Any, Dict, Literal, Optional
 
 from app.core.database import async_session
 from app.core.database.managers import UserManager
 from app.core.database.models import User
 from app.services.localization import Localization, load_localization
 
-# from app.services.requests.requests import get_user_by_tg_id
-
 
 async def update_loc_data(
-    data: dict,
+    data: Dict[str, Any],
     event: Optional[Any] = None,
-    role: Optional[Literal["user", "admin"]] = None,
+    role: Literal["user", "admin"] = "user",
 ) -> None:
     """
     Обновляет языковые данные для пользователя или администратора.
@@ -20,23 +25,19 @@ async def update_loc_data(
     уже есть в состоянии, повторная загрузка не выполняется.
 
     Args:
-        data (dict): Словарь данных хэндлера.
+        data (Dict[str, Any]): Словарь данных хэндлера.
         event (Optional[Any]): Событие от Telegram.
-        role (Optional[Literal['user','admin']]): Роль для загрузки
+        role (Optional[Literal["user", "admin"]]): Роль для загрузки
             локализации. Если None, роль определяется как 'user'.
     """
     state: Any = data.get("state")
     if not state:
         return
 
-    # Определяем роль, если не указана
-    if role not in ("user", "admin"):
-        role = "user"
-
     key: str = f"loc_{role}"
 
-    # Если локализация уже загружена, ничего не делаем
-    user_data: dict = await state.get_data()
+    # Проверяем, есть ли уже локализация в состоянии
+    user_data: Dict[str, Any] = await state.get_data()
     if key in user_data:
         return
 
@@ -44,14 +45,16 @@ async def update_loc_data(
     lang: str = "ru"
     if event and role == "user":
         tg_id: Optional[int] = getattr(event.from_user, "id", None)
-        async with async_session() as session:
-            user_manager = UserManager(session)
-            user: User | None = await user_manager.get(
-                tg_id
-            ) if tg_id else None
-        if user:
-            lang = user.lang
+        if tg_id:
+            async with async_session() as session:
+                user_manager = UserManager(session)
+                user: Optional[User] = await user_manager.get(tg_id)
+            if user:
+                lang = user.lang
 
     # Загружаем локализацию и обновляем состояние
     loc: Localization = await load_localization(lang, role=role)
-    await state.update_data(**{key: loc, "lang": lang})
+    await state.update_data(**{
+        key: loc,
+        "lang": lang}
+    )

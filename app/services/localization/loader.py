@@ -1,3 +1,10 @@
+"""
+Модуль для асинхронной загрузки файлов локализации.
+
+Позволяет загружать JSON-файлы локализации для пользователей
+и администраторов без блокировки event loop.
+"""
+
 import json
 from pathlib import Path
 from typing import Any, Literal
@@ -11,28 +18,29 @@ from app.services.localization.model import Localization
 
 async def load_localization(
     language: str,
-    role: Literal["user", "admin"] = "user"
+    role: Literal["user", "admin"] = "user",
 ) -> Localization:
     """
-    Загружает файл локализации по указанному языку и роли асинхронно.
+    Асинхронно загружает файл локализации по указанному языку и роли.
 
     Args:
-        language: Код языка, например "ru".
-        role: "user" для пользовательской локализации,
-              "admin" для админской.
+        language (str): Код языка, например "ru".
+        role (Literal["user", "admin"]): "user" для пользовательской локализации,
+            "admin" для админской.
 
     Returns:
-        Экземпляр Localization с данными из JSON-файла.
-        Если файл не найден или произошла ошибка, возвращается
-        пустая локализация.
+        Localization: Экземпляр Localization с данными из JSON-файла.
+        Если файл не найден или произошла ошибка, возвращается пустая
+        локализация.
     """
-    dir_map = {
+    dir_map: dict[str, Path] = {
         "user": LOCALIZATIONS_USER_DIR,
         "admin": LOCALIZATIONS_ADMIN_DIR,
     }
 
-    file_path: Path = dir_map.get(
-        role, LOCALIZATIONS_USER_DIR) / f"{language}.json"
+    file_path: Path = dir_map.get(role, LOCALIZATIONS_USER_DIR) / (
+        f"{language}.json"
+    )
 
     if not file_path.exists():
         logger.error(f"Localization file not found: {file_path.resolve()}")
