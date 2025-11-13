@@ -8,6 +8,7 @@ from app.filters import CallbackFilterNext, ChatTypeFilter
 from app.services.localization import Localization
 from app.services.logger import log
 from app.services.multi import multi
+from app.services.requests.data import manage_data_crud
 from app.services.requests.user import manage_user_state
 
 router: Router = Router()
@@ -62,8 +63,11 @@ async def next(
     # Формируем текст сообщения
     text_message: str
     keyboard_message: InlineKeyboardMarkup
-
-    text_message, keyboard_message = await multi(loc, value[0])
+    text_message, keyboard_message = await multi(
+        loc=loc,
+        value=value[0],
+        user_id=callback.from_user.id
+    )
 
     await callback.answer(value[0])
 
@@ -78,7 +82,7 @@ async def next(
             "push",
             value[0]
         )
-    except:
+    except BaseException:
         pass
 
     # Логируем событие
@@ -109,7 +113,11 @@ async def back(
     if not isinstance(backstate, str):
         return
 
-    text_message, keyboard_message = await multi(loc, backstate)
+    text_message, keyboard_message = await multi(
+        loc=loc,
+        value=backstate,
+        user_id=callback.from_user.id
+    )
 
     await callback.answer()
 
@@ -119,7 +127,7 @@ async def back(
             text=text_message,
             reply_markup=keyboard_message
         )
-    except:
+    except BaseException:
         pass
 
     # Логируем событие

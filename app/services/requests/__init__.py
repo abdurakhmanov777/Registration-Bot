@@ -1,11 +1,16 @@
 """
 Пакет requests для сервисов работы с запросами пользователей.
 
-Включает подмодули user и другие сервисы, работающие с БД.
+Включает подмодули user, data, работающие с БД.
 """
 
-from .user import *
+from .data import manage_data_crud, manage_data_list
+from .user import manage_user, manage_user_state, manage_user_update
 
 __all__: list[str] = [
-    "user",
+    "manage_data_crud",
+    "manage_data_list",
+    "manage_user",
+    "manage_user_state",
+    "manage_user_update",
 ]

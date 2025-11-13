@@ -80,14 +80,24 @@ async def start(
 
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
-    if not loc:
+    if not loc or not message.from_user:
         return
 
-        # Формируем текст сообщения
     text_message: str
     keyboard_message: InlineKeyboardMarkup
-    value = '1'
-    text_message, keyboard_message = await multi(loc, value)
+
+    value: bool | str | list[str] | None = await manage_user_state(
+        message.from_user.id,
+        "peek"
+    )
+    if not isinstance(value, str):
+        return
+
+    text_message, keyboard_message = await multi(
+        loc=loc,
+        value=value,
+        user_id=message.from_user.id
+    )
 
     # Отправляем сообщение пользователю (короткий вариант)
     await message.answer(

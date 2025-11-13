@@ -8,11 +8,13 @@ from typing import Any, Tuple
 from aiogram.types import InlineKeyboardMarkup
 
 from app.services.keyboards.user import kb_input, kb_select, kb_text
+from app.services.requests.data.crud import manage_data_crud
 
 
 async def multi(
     loc: Any,
-    value: str
+    value: str,
+    user_id: int
 ) -> Tuple[str, InlineKeyboardMarkup]:
     """
     Формирует текст сообщения и соответствующую клавиатуру для пользователя.
@@ -31,7 +33,7 @@ async def multi(
 
     if type_message == "text":
         text_message: str = base_text
-        keyboard_message: InlineKeyboardMarkup = kb_text(
+        keyboard_message: InlineKeyboardMarkup = await kb_text(
             state=keyboard,
             backstate=value
         )
@@ -41,9 +43,19 @@ async def multi(
         template: Any = loc.template.input
 
         error: bool = False
-        data: str | None = "Абдурахманов Далгат Шамильевич"
-        data = None
-
+        # data: str | None = "Абдурахманов Далгат Шамильевич"
+        data: Any = await manage_data_crud(
+            user_id=user_id,
+            action="create_or_update",
+            key=base_text,
+            value="Абдурахманов Далгат Шамильевич"
+        )
+        data: Any = await manage_data_crud(
+            user_id=user_id,
+            action="get",
+            key=base_text
+        )
+        print(data)
         if error:
             error_parts: Tuple[str, str] = template.error
             text_message = f"{error_parts[0]}{format_}{error_parts[1]}"
@@ -62,7 +74,7 @@ async def multi(
                 f"{data}{saved_parts[2]}"
             )
 
-        keyboard_message: InlineKeyboardMarkup = kb_input(
+        keyboard_message: InlineKeyboardMarkup = await kb_input(
             state=keyboard,
             backstate=value,
             show_next=data is not None
@@ -71,7 +83,7 @@ async def multi(
     else:
         select_parts: Tuple[str, str] = loc.template.select
         text_message: str = f"{select_parts[0]}{base_text}{select_parts[1]}"
-        keyboard_message: InlineKeyboardMarkup = kb_select(
+        keyboard_message: InlineKeyboardMarkup = await kb_select(
             data=keyboard
         )
 

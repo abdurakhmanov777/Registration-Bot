@@ -10,7 +10,7 @@ from typing import List, Tuple
 from aiogram import types
 
 
-def kb_text(
+async def kb_text(
     state: str,
     backstate: str,
 ) -> types.InlineKeyboardMarkup:
@@ -48,7 +48,7 @@ def kb_text(
     return types.InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
 
-def kb_input(
+async def kb_input(
     state: str,
     backstate: str,
     show_next: bool,
@@ -92,7 +92,7 @@ def kb_input(
     return types.InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def kb_select(
+async def kb_select(
     data: List[Tuple[str, str, str]],
 ) -> types.InlineKeyboardMarkup:
     """Формирует клавиатуру с длинными и короткими кнопками.

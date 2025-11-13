@@ -17,7 +17,7 @@ from .base import DataManagerBase
 
 
 class DataCRUD(DataManagerBase):
-    """Класс для выполнения CRUD-операций с данными пользователей."""
+    """Менеджер для выполнения CRUD-операций с данными пользователей."""
 
     async def get(
         self,
@@ -32,8 +32,7 @@ class DataCRUD(DataManagerBase):
             key (str): Ключ данных.
 
         Returns:
-            Optional[Data]: Объект Data или None, если запись
-                не найдена.
+            Optional[Data]: Объект Data, если запись найдена, иначе None.
         """
         try:
             result: Result[Tuple[Data]] = await self.session.execute(
@@ -43,19 +42,19 @@ class DataCRUD(DataManagerBase):
                 )
             )
             return result.scalar_one_or_none()
-        except SQLAlchemyError as e:
+        except SQLAlchemyError as error:
             # Логируем ошибку при получении данных
-            logger.error(f"Ошибка при получении данных: {e}")
+            logger.error(f"Ошибка при получении данных: {error}")
             return None
 
-    async def create(
+    async def create_or_update(
         self,
         user_id: int,
         key: str,
         value: str,
     ) -> Data:
         """
-        Создать новую пару ключ–значение для пользователя.
+        Создать новую пару ключ–значение или обновить существующую.
 
         Args:
             user_id (int): ID пользователя.
@@ -63,44 +62,22 @@ class DataCRUD(DataManagerBase):
             value (str): Значение данных.
 
         Returns:
-            Data: Созданный объект данных.
+            Data: Созданный или обновлённый объект Data.
         """
-        data = Data(
-            user_id=user_id,
-            key=key,
-            value=value,
-        )
-        # Добавляем запись в сессию
+        data: Optional[Data] = await self.get(user_id, key)
+        if data:
+            # Если запись существует, обновляем значение
+            data.value = value
+            await self.session.commit()
+            await self.session.refresh(data)
+            return data
+
+        # Если записи нет, создаём новую
+        data = Data(user_id=user_id, key=key, value=value)
         self.session.add(data)
         await self.session.commit()
         await self.session.refresh(data)
         return data
-
-    async def update(
-        self,
-        user_id: int,
-        key: str,
-        value: str,
-    ) -> bool:
-        """
-        Обновить значение существующего ключа.
-
-        Args:
-            user_id (int): ID пользователя.
-            key (str): Ключ данных.
-            value (str): Новое значение данных.
-
-        Returns:
-            bool: True, если обновление прошло успешно, иначе False.
-        """
-        data: Optional[Data] = await self.get(user_id, key)
-        if not data:
-            # Запись не найдена
-            return False
-
-        data.value = value
-        await self.session.commit()
-        return True
 
     async def delete(
         self,

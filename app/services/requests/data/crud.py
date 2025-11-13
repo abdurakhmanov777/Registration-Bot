@@ -5,59 +5,57 @@
 создание, получение, обновление и удаление пользовательских данных.
 """
 
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 
 from app.core.database.engine import async_session
 from app.core.database.managers import DataManager
-from app.core.database.models import Data
+from app.core.database.models.data import Data
 
 
 async def manage_data_crud(
     user_id: int,
-    action: Literal["get", "create", "update", "delete"],
+    action: Literal["get", "create_or_update", "delete"],
     key: str,
     value: Optional[str] = None,
-) -> Union[Data, bool, None]:
+) -> Optional[str]:
     """
-    Управляет CRUD-операциями с пользовательскими данными.
+    Выполняет CRUD-операции с пользовательскими данными и возвращает результат
+    в виде строки.
 
     Args:
         user_id (int): ID пользователя.
-        action (Literal["get", "create", "update", "delete"]): Действие для
-            выполнения.
-            - "get": получить значение по ключу;
-            - "create": создать новую запись;
-            - "update": обновить существующую запись;
+        action (Literal["get", "create_or_update", "delete"]): Действие:
+            - "get": получить запись по ключу;
+            - "create_or_update": создать новую запись или обновить существующую;
             - "delete": удалить запись.
         key (str): Ключ данных.
-        value (Optional[str]): Значение данных (для create/update).
+        value (Optional[str]): Значение данных (для create_or_update).
 
     Returns:
-        Union[Data, bool, None]:
-            - Data: объект данных для get/create;
-            - bool: результат операции update/delete;
-            - None: если запись не найдена при get.
+        Optional[str]: Строковое значение данных для get/create_or_update,
+        "True"/"False" для delete или None, если запись не найдена при get.
 
     Raises:
         ValueError: Если action неизвестен или value не передан для
-            create/update.
+            create_or_update.
     """
     async with async_session() as session:
         data_manager = DataManager(session)
 
         if action == "get":
-            return await data_manager.get(user_id, key)
+            data: Data | None = await data_manager.get(user_id, key)
+            return data.value if data else None
 
-        elif action in ("create", "update"):
+        elif action == "create_or_update":
             if value is None:
                 raise ValueError(
-                    f'Для {action} необходимо передать значение value.'
+                    'Для create_or_update необходимо передать значение value.'
                 )
-            if action == "create":
-                return await data_manager.create(user_id, key, value)
-            return await data_manager.update(user_id, key, value)
+            data = await data_manager.create_or_update(user_id, key, value)
+            return data.value
 
         elif action == "delete":
-            return await data_manager.delete(user_id, key)
+            result: bool = await data_manager.delete(user_id, key)
+            return str(result)
 
         raise ValueError(f"Неизвестное действие: {action!r}")
