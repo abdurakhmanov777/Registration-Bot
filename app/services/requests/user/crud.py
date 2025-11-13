@@ -48,8 +48,11 @@ async def manage_user(
         if action == "get":
             return await manager.get(tg_id)
 
+        elif action == "get_or_create":
+            return await manager.get_or_create(tg_id)
+
         elif action == "create":
-            return await manager.get_or_create(
+            return await manager.create(
                 tg_id=tg_id,
                 fullname=fullname,
                 group=group,
