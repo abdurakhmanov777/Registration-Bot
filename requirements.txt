@@ -1,23 +1,23 @@
 # --- Telegram Bot ---
-aiogram==3.22.0
-aiofiles==25.1.0       # асинхронная работа с файлами
+aiogram
+aiofiles       # асинхронная работа с файлами
 
 # --- Database and ORM ---
-SQLAlchemy==2.0.44
-aiosqlite==0.21.0      # асинхронная SQLite (или asyncpg для Postgres)
+SQLAlchemy
+aiosqlite               # асинхронная SQLite (или asyncpg для Postgres)
 
 # --- Utilities ---
-loguru==0.7.3          # удобное логирование
-python-dotenv==1.2.1   # загрузка .env переменных
-pydantic==2.12.4       # валидация данных
-pymorphy3==2.0.6       # морфологический анализ
-pymorphy3-dicts-ru==2.4.417150.4580142  # словари для pymorphy3
-pillow==12.0.0         # работа с изображениями
-gspread==6.2.1         # работа с Google Sheets
+loguru                  # удобное логирование
+python-dotenv           # загрузка .env переменных
+pydantic                # валидация данных
+pymorphy3               # морфологический анализ
+pymorphy3-dicts-ru      # словари для pymorphy3
+pillow                  # работа с изображениями
+gspread                 # работа с Google Sheets
 
 # --- Testing ---
-pytest==9.0.0
-pytest-asyncio==1.3.0
-pytest-cov==7.0.0      # покрытие тестов
+pytest
+pytest-asyncio
+pytest-cov      # покрытие тестов
 
 # pytz
