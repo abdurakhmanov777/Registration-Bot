@@ -15,13 +15,13 @@ from app.core.database.models import User
 async def manage_user(
     tg_id: int,
     action: Literal[
-        "get", "get_or_create", "create", "update", "delete"
+        "get", "msg_update", "get_or_create", "create", "update", "delete"
     ] = "get",
     lang: str = "ru",
     msg_id: int = 0,
     state: Optional[str] = None,
     **fields: Any,
-) -> Union[User, bool, None]:
+) -> Union[User, bool, None, int]:
     """
     Управляет CRUD-операциями пользователя.
 
@@ -33,6 +33,7 @@ async def manage_user(
         action (Literal): Действие для выполнения.
             - "get": получить пользователя;
             - "get_or_create": получить или создать пользователя;
+            - "msg_update": обновить msg_id и получить старый
             - "create": создать пользователя;
             - "update": обновить поля пользователя;
             - "delete": удалить пользователя.
@@ -47,7 +48,8 @@ async def manage_user(
 
     Returns:
         Union[User, bool, None]:
-            - User: объект пользователя для get, get_or_create, create или update;
+            - User: объект пользователя для get, get_or_create,
+                create или update;
             - bool: результат удаления для delete;
             - None: если get не нашёл пользователя.
     """
@@ -63,7 +65,11 @@ async def manage_user(
                 lang=lang,
                 msg_id=msg_id,
             )
-
+        elif action == "msg_update":
+            return await manager.msg_update(
+                tg_id,
+                msg_id=msg_id,
+            )
         elif action == "create":
             return await manager.create(
                 tg_id=tg_id,

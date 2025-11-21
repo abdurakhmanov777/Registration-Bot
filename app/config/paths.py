@@ -23,8 +23,7 @@ FONTS_DIR: Path = ASSETS_DIR / "fonts"          # Шрифты
 DOCUMENTS_DIR: Path = ASSETS_DIR / "documents"  # Документы
 
 # Директории локализаций
-# LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "locales" / "user"
-LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "locales" / "111"
+LOCALIZATIONS_USER_DIR: Path = ASSETS_DIR / "locales" / "user"
 LOCALIZATIONS_ADMIN_DIR: Path = ASSETS_DIR / "locales" / "admin"
 
 # Пути к основным файлам проекта

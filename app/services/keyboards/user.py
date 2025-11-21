@@ -35,7 +35,7 @@ async def kb_text(
         ]
     ]
 
-    if backstate != "1":
+    if backstate not in ["1", "2"]:
         keyboard_buttons.append(
             [
                 types.InlineKeyboardButton(
@@ -80,14 +80,15 @@ async def kb_input(
             ]
         )
 
-    buttons.append(
-        [
-            types.InlineKeyboardButton(
-                text="Назад",
-                callback_data="userback",
-            )
-        ]
-    )
+    if backstate != "2":
+        buttons.append(
+            [
+                types.InlineKeyboardButton(
+                    text="Назад",
+                    callback_data="userback",
+                )
+            ]
+        )
 
     return types.InlineKeyboardMarkup(inline_keyboard=buttons)
 
