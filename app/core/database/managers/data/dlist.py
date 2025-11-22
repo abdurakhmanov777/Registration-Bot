@@ -5,10 +5,11 @@
 для конкретного пользователя.
 """
 
-from typing import Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 from loguru import logger
 from sqlalchemy import Result, delete, select
+from sqlalchemy.engine import Result
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database.models import Data
@@ -19,29 +20,28 @@ from .base import DataManagerBase
 class DataList(DataManagerBase):
     """Класс для получения списка пар ключ–значение пользователя."""
 
-    async def list_all(
+    async def dict_all(
         self,
-        tg_id: int,
-    ) -> Sequence[Data]:
+        tg_id: int
+    ) -> Dict[str, Any]:
         """
-        Получить все пары ключ–значение для пользователя.
+        Получить все пары ключ–значение для пользователя в виде словаря.
 
         Args:
             tg_id (int): ID пользователя.
 
         Returns:
-            Sequence[Data]: Список объектов Data пользователя.
+            Dict[str, Any]: Словарь ключ–значение для пользователя.
         """
         try:
-            result: Result[Tuple[Data]] = await self.session.execute(
-                select(Data).where(Data.tg_id == tg_id)
+            result = await self.session.execute(
+                select(Data.key, Data.value).where(Data.tg_id == tg_id)
             )
-            # Возвращаем все записи пользователя
-            return result.scalars().all()
+            # Преобразуем список Row в словарь key → value
+            return {row.key: row.value for row in result.all()}
         except SQLAlchemyError as e:
-            # Логируем ошибку при получении списка данных
-            logger.error(f"Ошибка при получении списка данных: {e}")
-            return []
+            logger.error(f"Ошибка при получении данных пользователя: {e}")
+            return {}
 
     async def clear_all(
         self,

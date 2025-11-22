@@ -5,7 +5,7 @@
 и manage_data_clear для удаления всех записей конкретного пользователя.
 """
 
-from typing import Sequence
+from typing import Any, Dict, Sequence
 
 from app.core.database.engine import async_session
 from app.core.database.managers import DataManager
@@ -14,7 +14,7 @@ from app.core.database.models import Data
 
 async def manage_data_list(
     tg_id: int,
-) -> Sequence[Data]:
+) -> Dict[str, Any]:
     """
     Получает все записи (ключ–значение) для конкретного пользователя.
 
@@ -26,8 +26,8 @@ async def manage_data_list(
             Пустой список, если записей нет или произошла ошибка.
     """
     async with async_session() as session:
-        data_manager = DataManager(session)
-        return await data_manager.list_all(tg_id)
+        data_manager: Any = DataManager(session)
+        return await data_manager.dict_all(tg_id)
 
 
 async def manage_data_clear(

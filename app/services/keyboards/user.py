@@ -36,6 +36,37 @@ def kb_start(
     return types.InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
 
+def kb_end() -> types.InlineKeyboardMarkup:
+    """Создаёт клавиатуру с кнопками "Далее" и "Назад".
+
+    Если `backstate` равно "1", заменяет текст кнопки "Далее" на
+    "Соглашаюсь".
+
+    Args:
+        state (str): Текущее состояние пользователя.
+        backstate (str): Предыдущее состояние пользователя.
+
+    Returns:
+        types.InlineKeyboardMarkup: Сформированная клавиатура.
+    """
+    keyboard_buttons: List[List[types.InlineKeyboardButton]] = [
+        [
+            types.InlineKeyboardButton(
+                text="Отправить",
+                callback_data="userstate_100",
+            )
+        ],
+        [
+            types.InlineKeyboardButton(
+                text="Назад",
+                callback_data=f"userback",
+            )
+        ]
+    ]
+
+    return types.InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
+
+
 def kb_text(
     state: str,
     backstate: str,

@@ -7,6 +7,8 @@ from typing import Any, Callable, Tuple
 
 from aiogram.types import InlineKeyboardMarkup
 
+from app.services.multi.handlers.end import handle_end
+
 from .handlers.input import handle_input
 from .handlers.select import handle_select
 from .handlers.start import handle_start
@@ -42,7 +44,8 @@ async def multi(
         "input": handle_input,
         "select": handle_select,
         "text": handle_text,
-        "start": handle_start
+        "start": handle_start,
+        "end": handle_end
     }
 
     # Выбираем обработчик по типу состояния, по умолчанию start
