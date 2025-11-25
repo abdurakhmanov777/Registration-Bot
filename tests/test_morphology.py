@@ -5,8 +5,8 @@ from typing import Iterator
 
 import pytest
 
+from app.bot.utils.morphology.inflection import inflect_text
 from app.config.paths import BASE_DIR
-from app.utils.morphology.inflection import inflect_text
 from tests.test_cases import test_cases
 
 # Настройка пути к корню проекта

@@ -8,7 +8,7 @@ import asyncio
 
 from loguru import logger
 
-from app.core import init_db, run_bot
+from app import init_db, run_bot
 
 
 async def main() -> None:
