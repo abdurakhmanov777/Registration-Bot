@@ -8,6 +8,7 @@
 from .admin import Admin
 from .base import Base
 from .data import Data
+from .file import UserFile
 from .flag import Flag
 from .user import User
 
@@ -16,6 +17,7 @@ __all__: list[str] = [
     "Admin",
     "Base",
     "Data",
-    "User",
+    "UserFile",
     "Flag",
+    "User",
 ]

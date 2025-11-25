@@ -16,7 +16,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from .data import Data  # Тип используется только для подсказок IDE
+    from .data import Data
+    from .file import UserFile
 
 
 class User(Base):
@@ -54,11 +55,16 @@ class User(Base):
         DateTime
     )
 
-    # Связь с таблицей Data для хранения ключ–значение пользователя
     data: Mapped[list[Data]] = relationship(
         "Data",
         back_populates="user",
         cascade="all, delete-orphan"
+    )
+
+    files: Mapped[list["UserFile"]] = relationship(
+        "UserFile",
+        back_populates="user",
+        lazy="selectin"
     )
 
     def __repr__(self) -> str:
