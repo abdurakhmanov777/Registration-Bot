@@ -22,25 +22,16 @@ class Data(Base):
 
     __tablename__: Any = "data"
 
-    id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True
-    )
-    tg_id: Mapped[int] = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
         ForeignKey("user.id", ondelete="CASCADE"),
         nullable=False
     )
-    key: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False
-    )
-    value: Mapped[str] = mapped_column(
-        String,
-        nullable=False
-    )
+    key: Mapped[str] = mapped_column(String(255), nullable=False)
+    value: Mapped[str] = mapped_column(String, nullable=False)
 
-    # Связь с пользователем для удобного доступа к данным
-    user: Mapped[User] = relationship(
+    # Связь с пользователем
+    user: Mapped["User"] = relationship(
         "User",
         back_populates="data",
         lazy="selectin"
@@ -52,4 +43,4 @@ class Data(Base):
         Returns:
             str: Строка с tg_id и ключом записи.
         """
-        return f"<Data tg_id={self.tg_id} key={self.key}>"
+        return f"<Data user_id={self.user_id} key={self.key}>"

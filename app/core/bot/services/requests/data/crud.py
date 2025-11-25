@@ -1,8 +1,9 @@
 """
 Универсальная обёртка для работы с таблицей Data.
 
-Содержит функцию manage_data для выполнения CRUD-операций:
-создание, получение, обновление и удаление пользовательских данных.
+Модуль содержит функцию manage_data для выполнения CRUD-операций:
+создание, получение, обновление и удаление пользовательских данных
+по Telegram ID пользователя.
 """
 
 from typing import Literal, Optional
@@ -18,22 +19,24 @@ async def manage_data(
     key: str,
     value: Optional[str] = None,
 ) -> Optional[str]:
-    """
-    Выполняет CRUD-операции с пользовательскими данными и возвращает результат
-    в виде строки.
+    """Выполняет CRUD-операции с пользовательскими данными.
+
+    Оборачивает методы DataManager для работы с таблицей Data.
+    Возвращает строковое значение данных для get/create_or_update,
+    "True"/"False" для delete или None, если запись не найдена.
 
     Args:
-        tg_id (int): ID пользователя.
+        tg_id (int): Telegram ID пользователя.
         action (Literal["get", "create_or_update", "delete"]): Действие:
             - "get": получить запись по ключу;
             - "create_or_update": создать новую запись или обновить существующую;
             - "delete": удалить запись.
         key (str): Ключ данных.
-        value (Optional[str]): Значение данных (для create_or_update).
+        value (Optional[str]): Значение данных для create_or_update.
 
     Returns:
-        Optional[str]: Строковое значение данных для get/create_or_update,
-        "True"/"False" для delete или None, если запись не найдена при get.
+        Optional[str]: Строковое значение данных, "True"/"False" для delete
+        или None, если запись не найдена.
 
     Raises:
         ValueError: Если action неизвестен или value не передан для
@@ -43,18 +46,20 @@ async def manage_data(
         data_manager = DataManager(session)
 
         if action == "get":
-            data: Data | None = await data_manager.get(tg_id, key)
+            data: Optional[Data] = await data_manager.get(tg_id, key)
             return data.value if data else None
 
-        elif action == "create_or_update":
+        if action == "create_or_update":
             if value is None:
                 raise ValueError(
-                    'Для create_or_update необходимо передать значение value.'
+                    "Для create_or_update необходимо передать значение value."
                 )
-            data = await data_manager.create_or_update(tg_id, key, value)
-            return data.value
+            data: Optional[Data] = await data_manager.create_or_update(
+                tg_id, key, value
+            )
+            return data.value if data else None
 
-        elif action == "delete":
+        if action == "delete":
             result: bool = await data_manager.delete(tg_id, key)
             return str(result)
 

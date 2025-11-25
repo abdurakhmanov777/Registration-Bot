@@ -1,17 +1,19 @@
 """
 CRUD-операции для работы с таблицей Data.
 
-Содержит методы для создания, получения, обновления и
-удаления записей ключ–значение пользователей.
+Модуль содержит класс DataCRUD для создания, получения,
+обновления и удаления записей ключ–значение пользователей
+по их Telegram ID (tg_id).
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 from loguru import logger
-from sqlalchemy import Result, select
+from sqlalchemy import select
+from sqlalchemy.engine import Result as SAResult
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.core.database.models import Data
+from app.core.database.models import Data, User
 
 from .base import DataManagerBase
 
@@ -19,31 +21,52 @@ from .base import DataManagerBase
 class DataCRUD(DataManagerBase):
     """Менеджер для выполнения CRUD-операций с данными пользователей."""
 
+    async def _get_user(self, tg_id: int) -> Optional[User]:
+        """Получает пользователя по его Telegram ID.
+
+        Args:
+            tg_id (int): Telegram ID пользователя.
+
+        Returns:
+            Optional[User]: Объект User или None, если пользователь
+            не найден.
+        """
+        try:
+            result: SAResult[tuple[User]] = await self.session.execute(
+                select(User).where(User.tg_id == tg_id)
+            )
+            return result.scalar_one_or_none()
+        except SQLAlchemyError as error:
+            logger.error(f"Ошибка при получении пользователя: {error}")
+            return None
+
     async def get(
         self,
         tg_id: int,
-        key: str,
+        key: str
     ) -> Optional[Data]:
-        """
-        Получить запись по ключу для конкретного пользователя.
+        """Получает запись данных по ключу для конкретного пользователя.
 
         Args:
-            tg_id (int): ID пользователя.
+            tg_id (int): Telegram ID пользователя.
             key (str): Ключ данных.
 
         Returns:
             Optional[Data]: Объект Data, если запись найдена, иначе None.
         """
+        user: Optional[User] = await self._get_user(tg_id)
+        if not user:
+            return None
+
         try:
-            result: Result[Tuple[Data]] = await self.session.execute(
+            result: SAResult[tuple[Data]] = await self.session.execute(
                 select(Data).where(
-                    Data.tg_id == tg_id,
+                    Data.user_id == user.id,
                     Data.key == key,
                 )
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as error:
-            # Логируем ошибку при получении данных
             logger.error(f"Ошибка при получении данных: {error}")
             return None
 
@@ -51,29 +74,31 @@ class DataCRUD(DataManagerBase):
         self,
         tg_id: int,
         key: str,
-        value: str,
-    ) -> Data:
-        """
-        Создать новую пару ключ–значение или обновить существующую.
+        value: str
+    ) -> Optional[Data]:
+        """Создает новую запись данных или обновляет существующую.
 
         Args:
-            tg_id (int): ID пользователя.
+            tg_id (int): Telegram ID пользователя.
             key (str): Ключ данных.
             value (str): Значение данных.
 
         Returns:
-            Data: Созданный или обновлённый объект Data.
+            Optional[Data]: Созданный или обновлённый объект Data,
+            или None, если пользователь не найден.
         """
+        user: Optional[User] = await self._get_user(tg_id)
+        if not user:
+            return None
+
         data: Optional[Data] = await self.get(tg_id, key)
         if data:
-            # Если запись существует, обновляем значение
             data.value = value
             await self.session.commit()
             await self.session.refresh(data)
             return data
 
-        # Если записи нет, создаём новую
-        data = Data(tg_id=tg_id, key=key, value=value)
+        data = Data(user=user, key=key, value=value)
         self.session.add(data)
         await self.session.commit()
         await self.session.refresh(data)
@@ -82,13 +107,12 @@ class DataCRUD(DataManagerBase):
     async def delete(
         self,
         tg_id: int,
-        key: str,
+        key: str
     ) -> bool:
-        """
-        Удалить пару ключ–значение пользователя.
+        """Удаляет запись данных пользователя по ключу.
 
         Args:
-            tg_id (int): ID пользователя.
+            tg_id (int): Telegram ID пользователя.
             key (str): Ключ данных.
 
         Returns:
@@ -96,7 +120,6 @@ class DataCRUD(DataManagerBase):
         """
         data: Optional[Data] = await self.get(tg_id, key)
         if not data:
-            # Запись не найдена
             return False
 
         await self.session.delete(data)
