@@ -13,6 +13,7 @@ from app.core.database.managers import DataManager
 
 async def manage_data_list(
     tg_id: int,
+    keep_keys: list[str] | None = None,
 ) -> Dict[str, Any]:
     """
     Получает все записи (ключ–значение) для конкретного пользователя.
@@ -26,6 +27,11 @@ async def manage_data_list(
     """
     async with async_session() as session:
         data_manager: Any = DataManager(session)
+
+        if keep_keys is not None:
+            # Оптимизированное удаление всех ключей, которых нет в списке
+            await data_manager.clear_except_keys(tg_id, keep_keys)
+
         return await data_manager.dict_all(tg_id)
 
 

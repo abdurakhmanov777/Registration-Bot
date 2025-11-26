@@ -1,25 +1,27 @@
 """
-Модуль обработки финального состояния пользователя,
-формирования итогового сообщения и клавиатуры.
+Модуль обработки финального состояния пользователя и формирования итогового
+сообщения с клавиатурой.
 """
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from aiogram.types import InlineKeyboardMarkup
 
 from app.core.bot.services.keyboards.user import kb_end
 from app.core.bot.services.multi.context import MultiContext
-from app.core.bot.services.requests.data.dlist import manage_data_list
+from app.core.bot.services.requests.data import manage_data_list
+from app.core.bot.services.requests.user import manage_user_state
 
 
 async def handle_end(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup]:
     """
-    Обрабатывает состояние пользователя и формирует сообщение.
+    Обрабатывает состояние пользователя и формирует итоговое сообщение.
 
-    Формирует текст на основе шаблона локализации и списка данных,
-    собранных от пользователя.
+    Получает список всех состояний пользователя, фильтрует их и формирует
+    текст на основе шаблона локализации и данных пользователя. Формирует
+    клавиатуру завершения.
 
     Args:
         ctx (MultiContext): Контекст с параметрами обработки.
@@ -27,9 +29,30 @@ async def handle_end(
     Returns:
         Tuple[str, InlineKeyboardMarkup]: Сообщение и клавиатура.
     """
+    states: bool | str | List[str] | None = await manage_user_state(
+        tg_id=ctx.tg_id,
+        action="get_state",
+    )
 
-    # Получаем список всех данных пользователя
-    data_list: Dict[str, Any] = await manage_data_list(tg_id=ctx.tg_id)
+    if not isinstance(states, list):
+        raise ValueError(
+            f"Некорректный формат состояний пользователя: {states!r}"
+        )
+
+    # Формируем список ключей данных, которые нужно оставить
+    keep_keys: List[str] = [
+        data.text
+        for state in states
+        if (data := getattr(ctx.loc, f"userstate_{state}", None)) is not None
+        and getattr(data, "type", None) not in ("start", "end")
+        and getattr(data, "text", None) is not None
+    ]
+
+    # Получаем словарь данных пользователя, оставляя только нужные ключи
+    data_list: Dict[str, Any] = await manage_data_list(
+        tg_id=ctx.tg_id,
+        keep_keys=keep_keys,
+    )
 
     # Формируем текст блоков данных
     items_text: str = "\n\n".join(
@@ -37,11 +60,11 @@ async def handle_end(
     )
 
     # Получаем шаблон локализации для начала и конца сообщения
-    p1: str
-    p2: str
-    p1, p2 = ctx.loc.template.end
+    start_template: str
+    end_template: str
+    start_template, end_template = ctx.loc.template.end
 
-    text_message: str = f"{p1}{items_text}{p2}"
+    text_message: str = f"{start_template}{items_text}{end_template}"
 
     # Формируем клавиатуру завершения
     keyboard: InlineKeyboardMarkup = kb_end(buttons=ctx.loc.button)

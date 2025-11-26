@@ -8,6 +8,7 @@ from app.core.bot.routers.filters import CallbackFilterNext, ChatTypeFilter
 from app.core.bot.services.localization import Localization
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import handle_send, multi
+from app.core.bot.services.multi.context import MultiContext
 from app.core.bot.services.requests.user.crud import manage_user
 from app.core.bot.services.requests.user.state import manage_user_state
 from app.core.database.models import User
@@ -64,13 +65,6 @@ async def clbk_next(
     # Формируем текст сообщения
     text_message: str
     keyboard_message: InlineKeyboardMarkup
-    backstate: bool | str | list[str] | None = await manage_user_state(
-        callback.from_user.id,
-        "peekpush",
-        value[0]
-    )
-    if not isinstance(backstate, str):
-        return
 
     data_select: list[str] | None = None
     if len(value) == 3:
@@ -88,6 +82,11 @@ async def clbk_next(
         await callback.message.edit_text(
             text=text_message,
             reply_markup=keyboard_message
+        )
+        await manage_user_state(
+            callback.from_user.id,
+            "push",
+            value[0]
         )
     except BaseException:
         pass
@@ -115,7 +114,6 @@ async def clbk_send(
         event=callback
     )
     if not isinstance(msg_id, int) or not callback.message.bot:
-        await log(callback)
         return
 
     try:
@@ -129,8 +127,13 @@ async def clbk_send(
                 callback.message.chat.id,
                 msg_id_old
             )
-    except Exception as e:
-        print(e)
+        await manage_user_state(
+            callback.from_user.id,
+            "push",
+            "100"
+        )
+    except:
+        pass
 
     await log(callback)
 

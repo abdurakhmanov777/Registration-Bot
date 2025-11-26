@@ -9,11 +9,12 @@ from aiogram import types
 from aiogram.enums import ChatAction
 
 from app.core.bot.services.generator import generate_text_image
-from app.core.bot.services.multi.context import MultiContext
 
 
 async def handle_send(
-    ctx: MultiContext,
+    loc: Any,
+    tg_id: int,
+    event: Optional[types.CallbackQuery | types.Message]
 ) -> Optional[int]:
     """
     Обрабатывает состояние отправки финального сообщения с изображением.
@@ -25,10 +26,6 @@ async def handle_send(
         Optional[int]: ID отправленного сообщения (для закрепления),
             либо None, если отправка невозможна.
     """
-
-    event: Any = ctx.event
-    loc: Any = ctx.loc
-    tg_id: int = ctx.tg_id
 
     # Универсальный способ получить message
     message: Optional[types.MaybeInaccessibleMessageUnion]

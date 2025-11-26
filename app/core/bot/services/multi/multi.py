@@ -5,7 +5,7 @@
 
 from typing import Any, Callable, Tuple
 
-from aiogram.types import InlineKeyboardMarkup
+from aiogram import types
 
 from app.core.bot.services.requests.data import manage_data
 
@@ -13,7 +13,7 @@ from .context import MultiContext
 from .handlers.end import handle_end
 from .handlers.input import handle_input
 from .handlers.select import handle_select
-from .handlers.send import handle_send
+# from .handlers.send import handle_send
 from .handlers.start import handle_start
 from .handlers.text import handle_text
 
@@ -24,8 +24,9 @@ async def multi(
     tg_id: int,
     data: str | None = None,
     data_select: list[str] | None = None,
+    event: types.CallbackQuery | types.Message | None = None,
     **extra: Any
-) -> Tuple[str, InlineKeyboardMarkup]:
+) -> Tuple[str, types.InlineKeyboardMarkup]:
     """
     Формирует текст сообщения и клавиатуру для пользователя
     в зависимости от типа состояния.
@@ -50,6 +51,7 @@ async def multi(
         value=value,
         tg_id=tg_id,
         data=data,
+        event=event,
         extra=extra or {},
     )
 
@@ -59,7 +61,6 @@ async def multi(
         "text": handle_text,
         "start": handle_start,
         "end": handle_end,
-        "send": handle_send,
     }
 
     handler: Callable[[MultiContext], Any] = handler_map.get(

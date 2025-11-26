@@ -16,6 +16,7 @@ from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards import help, kb_delete
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
+from app.core.bot.services.multi.handlers.send import handle_send
 from app.core.bot.services.requests.data import manage_data_clear
 from app.core.bot.services.requests.user import manage_user, manage_user_state
 from app.core.database.models.user import User
@@ -73,7 +74,8 @@ async def cmd_start(
         tg_id=message.from_user.id,
         action="get",
     )
-    if not isinstance(db_user, User):
+
+    if not isinstance(db_user, User) or not isinstance(value, str):
         return
 
     msg_id: User | bool | None | int = await manage_user(
@@ -82,27 +84,31 @@ async def cmd_start(
         msg_id=message.message_id + 1
     )
 
-    if not isinstance(value, str):
-        return
+    if not value == "100":
+        text_message: str
+        keyboard_message: InlineKeyboardMarkup
+        text_message, keyboard_message = await multi(
+            loc=loc,
+            value=value,
+            tg_id=message.from_user.id
+        )
 
-    text_message: str
-    keyboard_message: InlineKeyboardMarkup
-    text_message, keyboard_message = await multi(
-        loc=loc,
-        value=value,
-        tg_id=message.from_user.id
-    )
-
-    await message.answer(
-        text=text_message,
-        reply_markup=keyboard_message
-    )
+        await message.answer(
+            text=text_message,
+            reply_markup=keyboard_message
+        )
+    else:
+        await handle_send(
+            loc=loc,
+            tg_id=message.from_user.id,
+            event=message
+        )
 
     if isinstance(msg_id, int) and msg_id != 0 and message.bot:
         try:
             await message.bot.delete_message(message.chat.id, msg_id)
-        except Exception as e:
-            print(e)
+        except BaseException:
+            pass
 
     await log(message)
 
@@ -153,8 +159,8 @@ async def cmd_cancel(
     if isinstance(msg_id, int) and msg_id != 0 and message.bot:
         try:
             await message.bot.delete_message(message.chat.id, msg_id)
-        except Exception as e:
-            print(e)
+        except:
+            pass
 
     await log(message)
 

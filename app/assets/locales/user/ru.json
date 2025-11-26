@@ -50,7 +50,7 @@
     "userstate_99": {
         "type": "end"
     },
-    "sending_data": {
+    "userstate_100": {
         "type": "send"
     },
     "help": "<b>Администраторы бота</b>\n\n<i>Задай вопрос по мероприятию</i>",
