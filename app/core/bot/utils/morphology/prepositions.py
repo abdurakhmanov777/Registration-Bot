@@ -5,7 +5,7 @@ FIX_O_PATTERN: re.Pattern[str] = re.compile(r"\b([оО])\s+([«'“‘(]*)(\w)")
 VOWELS: set[str] = set('аеёиоуыэюяАЕЁИОУЫЭЮЯ')
 
 
-async def fix_preposition_o(
+async def fix_o(
     text: str
 ) -> str:
     """

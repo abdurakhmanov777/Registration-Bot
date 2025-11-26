@@ -3,13 +3,8 @@
 Содержит функции склонения слов и исправления предлогов.
 """
 
-from .casing import cap_words, lower_words
-from .inflection import inflect_text
-from .prepositions import fix_o
+from .guards import ensure
 
 __all__: list[str] = [
-    "cap_words",
-    "lower_words",
-    "inflect_text",
-    "fix_o",
+    "ensure",
 ]

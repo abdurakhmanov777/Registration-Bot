@@ -5,12 +5,14 @@
 с динамическими клавиатурами и локализацией.
 """
 
-from typing import Any, Callable, Dict
+from functools import wraps
+from typing import Any, Callable
 
-from aiogram import Router
+from aiogram import Bot, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message
+from aiogram.types import User as TgUser
 
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards import help, kb_delete
@@ -19,95 +21,95 @@ from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.send import handle_send
 from app.core.bot.services.requests.data import manage_data_clear
 from app.core.bot.services.requests.user import manage_user, manage_user_state
-from app.core.database.models.user import User
+from app.core.bot.utils import ensure
+from app.core.database.models import User
 
 router: Router = Router()
+
+
+# ------------------------- Decorators --------------------------------
 
 
 def user_command(
     *commands: str
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """
-    Декоратор для регистрации команд, доступных только в приватных чатах.
+    """Декоратор для регистрации команд и проверки контекста пользователя.
 
-    Args:
-        *commands (str): Названия команд для фильтрации.
-
-    Returns:
-        Callable: Декоратор для функции-обработчика.
+    Обеспечивает передачу tg_user, bot и loc в хэндлер.
     """
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(func)
+        async def wrapper(
+            message: Message,
+            state: FSMContext,
+            *args: Any,
+            **kwargs: Any
+        ) -> None:
+            tg_user: TgUser | None = message.from_user
+            bot: Bot | None = message.bot
+            state_data: dict[str, Any] = await state.get_data()
+            loc: Any | None = state_data.get("loc_user")
+
+            if tg_user is None or bot is None or loc is None:
+                return
+
+            kwargs.update({"tg_user": tg_user, "bot": bot, "loc": loc})
+            return await func(message, state, *args, **kwargs)
+
         return router.message(
-            ChatTypeFilter(chat_type=["private"]),
+            ChatTypeFilter(["private"]),
             Command(*commands)
-        )(func)
+        )(wrapper)
 
     return decorator
+
+
+# ---------------------------- Handlers -------------------------------
 
 
 @user_command("start")
 async def cmd_start(
     message: Message,
-    state: FSMContext
+    state: FSMContext,
+    *,
+    tg_user: TgUser,
+    bot: Bot,
+    loc: Any
 ) -> None:
-    """
-    Обрабатывает команду /start.
-
-    Получает текст и клавиатуру из локализации по ключу команды
-    и отправляет сообщение с динамической клавиатурой.
+    """Обрабатывает команду /start и отправляет сообщение с клавиатурой.
 
     Args:
         message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        state (FSMContext): Контекст FSM пользователя.
+        tg_user (TgUser): Объект Telegram пользователя.
+        bot (Bot): Экземпляр бота.
+        loc (Any): Локализация пользователя.
     """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc or not message.from_user:
+    tg_id: int = tg_user.id
+    value: str | None = ensure(await manage_user_state(tg_id, "peek"), str)
+    db_user: User | None = ensure(await manage_user(tg_id=tg_id, action="get"), User)
+    if not value or not db_user:
         return
 
-    value: bool | str | list[str] | None = await manage_user_state(
-        message.from_user.id,
-        "peek"
+    msg_id: int | None = ensure(
+        await manage_user(
+            tg_id=tg_id, action="msg_update", msg_id=message.message_id + 1
+        ),
+        int,
     )
 
-    db_user: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="get",
-    )
-
-    if not isinstance(db_user, User) or not isinstance(value, str):
-        return
-
-    msg_id: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="msg_update",
-        msg_id=message.message_id + 1
-    )
-
-    if not value == "100":
-        text_message: str
-        keyboard_message: InlineKeyboardMarkup
-        text_message, keyboard_message = await multi(
-            loc=loc,
-            value=value,
-            tg_id=message.from_user.id
-        )
-
-        await message.answer(
-            text=text_message,
-            reply_markup=keyboard_message
-        )
+    if value != "100":
+        text: str
+        keyboard: InlineKeyboardMarkup
+        text, keyboard = await multi(loc=loc, value=value, tg_id=tg_id)
+        await message.answer(text=text, reply_markup=keyboard)
     else:
-        await handle_send(
-            loc=loc,
-            tg_id=message.from_user.id,
-            event=message
-        )
+        await handle_send(loc=loc, tg_id=tg_id, event=message)
 
-    if isinstance(msg_id, int) and msg_id != 0 and message.bot:
+    if msg_id:
         try:
-            await message.bot.delete_message(message.chat.id, msg_id)
-        except BaseException:
+            await bot.delete_message(message.chat.id, msg_id)
+        except Exception:
             pass
 
     await log(message)
@@ -116,50 +118,43 @@ async def cmd_start(
 @user_command("cancel")
 async def cmd_cancel(
     message: Message,
-    state: FSMContext
+    state: FSMContext,
+    *,
+    tg_user: TgUser,
+    bot: Bot,
+    loc: Any
 ) -> None:
-    """
-    Обрабатывает команду /cancel.
-
-    Очищает состояние пользователя и отправляет сообщение
-    с клавиатурой по умолчанию.
+    """Обрабатывает команду /cancel, очищает состояние пользователя
+    и отправляет клавиатуру по умолчанию.
 
     Args:
         message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        state (FSMContext): Контекст FSM пользователя.
+        tg_user (TgUser): Объект Telegram пользователя.
+        bot (Bot): Экземпляр бота.
+        loc (Any): Локализация пользователя.
     """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc or not message.from_user:
-        return
+    tg_id: int = tg_user.id
 
-    await manage_user_state(
-        message.from_user.id,
-        "clear"
-    )
-    await manage_data_clear(tg_id=message.from_user.id)
-    text_message: str
-    keyboard_message: InlineKeyboardMarkup
-    text_message, keyboard_message = await multi(
-        loc=loc,
-        value='1',
-        tg_id=message.from_user.id
-    )
+    await manage_user_state(tg_id, "clear")
+    await manage_data_clear(tg_id=tg_id)
 
-    await message.answer(
-        text=text_message,
-        reply_markup=keyboard_message
+    text: str
+    keyboard: InlineKeyboardMarkup
+    text, keyboard = await multi(loc=loc, value="1", tg_id=tg_id)
+    await message.answer(text=text, reply_markup=keyboard)
+
+    msg_id: int | None = ensure(
+        await manage_user(
+            tg_id=tg_id, action="msg_update", msg_id=message.message_id + 1
+        ),
+        int,
     )
 
-    msg_id: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="msg_update",
-        msg_id=message.message_id + 1
-    )
-    if isinstance(msg_id, int) and msg_id != 0 and message.bot:
+    if msg_id:
         try:
-            await message.bot.delete_message(message.chat.id, msg_id)
-        except:
+            await bot.delete_message(message.chat.id, msg_id)
+        except Exception:
             pass
 
     await log(message)
@@ -168,53 +163,47 @@ async def cmd_cancel(
 @user_command("id")
 async def cmd_id(
     message: Message,
-    state: FSMContext
+    state: FSMContext,
+    *,
+    tg_user: TgUser,
+    bot: Bot,
+    loc: Any
 ) -> None:
-    """
-    Отправляет ID текущего чата с шаблоном текста и кнопкой удаления.
+    """Отправляет ID текущего чата с шаблоном текста и кнопкой удаления.
 
     Args:
         message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        state (FSMContext): Контекст FSM пользователя.
+        tg_user (TgUser): Объект Telegram пользователя.
+        bot (Bot): Экземпляр бота.
+        loc (Any): Локализация пользователя.
     """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc:
-        return
-
     text_prefix: Any
     text_suffix: Any
     text_prefix, text_suffix = loc.template.id
     text: str = f"{text_prefix}{message.chat.id}{text_suffix}"
 
-    await message.answer(
-        text=text,
-        reply_markup=kb_delete
-    )
-
+    await message.answer(text=text, reply_markup=kb_delete)
     await log(message)
 
 
 @user_command("help")
 async def cmd_help(
     message: Message,
-    state: FSMContext
+    state: FSMContext,
+    *,
+    tg_user: TgUser,
+    bot: Bot,
+    loc: Any
 ) -> None:
-    """
-    Отправляет контакты админов с помощью кнопок.
+    """Отправляет контакты админов с помощью кнопок.
 
     Args:
         message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        state (FSMContext): Контекст FSM пользователя.
+        tg_user (TgUser): Объект Telegram пользователя.
+        bot (Bot): Экземпляр бота.
+        loc (Any): Локализация пользователя.
     """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc:
-        return
-
-    await message.answer(
-        text=loc.help,
-        reply_markup=help
-    )
-
+    await message.answer(text=loc.help, reply_markup=help)
     await log(message)

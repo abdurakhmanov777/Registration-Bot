@@ -10,7 +10,7 @@ from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery
 
 
-class CallbackFilterNext(BaseFilter):
+class CallbackNextFilter(BaseFilter):
     """Фильтр для callback-запросов, содержащих подстроку 'userstate_'.
 
     Если `callback.data` содержит подстроку 'userstate_', фильтр возвращает
