@@ -5,8 +5,8 @@
 файловой системой и другими вспомогательными задачами.
 """
 
-from .generator_image import generate_text_image
+from .generator_image import generate_image
 
 __all__: list[str] = [
-    "generate_text_image",
+    "generate_image",
 ]

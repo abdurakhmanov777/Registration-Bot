@@ -14,7 +14,7 @@ from PIL.ImageFile import ImageFile
 from app.config import BACKGROUND_PATH, FONT_PATH
 
 
-async def generate_text_image(
+async def generate_image(
     text: str,
 ) -> BytesIO:
     """

@@ -3,14 +3,15 @@
 """
 
 from io import BytesIO
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from aiogram import types
 from aiogram.enums import ChatAction
 
-from app.core.bot.services.generator import generate_text_image
+from app.core.bot.services.generator import generate_image
 from app.core.bot.services.generator.generator_code import generate_code
-from app.core.bot.services.requests.user import manage_user, manage_user_state
+from app.core.bot.services.keyboards.user import kb_send
+from app.core.bot.services.requests.user import manage_user
 from app.core.database.models.user import User
 
 
@@ -60,7 +61,7 @@ async def handle_send(
 
     try:
         # Генерация изображения
-        buffer: BytesIO = await generate_text_image(str(code))
+        buffer: BytesIO = await generate_image(str(code))
 
         p1: str
         p2: str
@@ -71,7 +72,8 @@ async def handle_send(
         msg: types.Message = await message.answer_photo(
             photo=types.BufferedInputFile(buffer.read(), filename="code.png"),
             caption=caption,
-            parse_mode="HTML"
+            parse_mode="HTML",
+            # reply_markup=kb_send(buttons=loc.button)
         )
 
         # Закрепление сообщения

@@ -190,7 +190,7 @@ async def clbk_cancel(
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
-    if not loc or not callback.from_user or not callback.message:
+    if not loc or not isinstance(callback.message, Message):
         return
 
     await manage_user_state(
@@ -225,7 +225,6 @@ async def clbk_cancel(
         except BaseException:
             pass
 
-    if isinstance(callback.message, Message):
-        await callback.message.delete()
-        
+    await callback.message.delete()
+
     await log(callback)

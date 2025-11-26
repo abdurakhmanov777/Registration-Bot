@@ -123,62 +123,6 @@ async def cmd_cancel(
     await log(message)
 
 
-
-# @router.message(
-#     ChatTypeFilter(chat_type=["private"]),
-#     Command("cancel")
-# )
-# async def cmd_cancel(
-#     message: Message,
-#     state: FSMContext
-# ) -> None:
-#     """
-#     Обрабатывает команду /cancel.
-
-#     Очищает состояние пользователя и отправляет сообщение
-#     с клавиатурой по умолчанию.
-
-#     Args:
-#         message (Message): Входящее сообщение Telegram.
-#         state (FSMContext): Контекст FSM для хранения данных пользователя.
-#     """
-#     user_data: Dict[str, Any] = await state.get_data()
-#     loc: Any = user_data.get("loc_user")
-#     if not loc or not message.from_user:
-#         return
-
-#     await manage_user_state(
-#         message.from_user.id,
-#         "clear"
-#     )
-#     await manage_data_clear(tg_id=message.from_user.id)
-#     text_message: str
-#     keyboard_message: InlineKeyboardMarkup
-#     text_message, keyboard_message = await multi(
-#         loc=loc,
-#         value='1',
-#         tg_id=message.from_user.id
-#     )
-
-#     await message.answer(
-#         text=text_message,
-#         reply_markup=keyboard_message
-#     )
-
-#     msg_id: User | bool | None | int = await manage_user(
-#         tg_id=message.from_user.id,
-#         action="msg_update",
-#         msg_id=message.message_id + 1
-#     )
-#     if isinstance(msg_id, int) and msg_id != 0 and message.bot:
-#         try:
-#             await message.bot.delete_message(message.chat.id, msg_id)
-#         except BaseException:
-#             pass
-
-#     await log(message)
-
-
 @router.message(
     ChatTypeFilter(chat_type=["private"]),
     Command("id")
