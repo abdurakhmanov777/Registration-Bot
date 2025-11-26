@@ -24,28 +24,10 @@ from app.core.database.models.user import User
 router: Router = Router()
 
 
-def user_command(
-    *commands: str
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """
-    Декоратор для регистрации команд, доступных только в приватных чатах.
-
-    Args:
-        *commands (str): Названия команд для фильтрации.
-
-    Returns:
-        Callable: Декоратор для функции-обработчика.
-    """
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        return router.message(
-            ChatTypeFilter(chat_type=["private"]),
-            Command(*commands)
-        )(func)
-
-    return decorator
-
-
-@user_command("start")
+@router.message(
+    ChatTypeFilter(chat_type=["private"]),
+    Command("start")
+)
 async def cmd_start(
     message: Message,
     state: FSMContext
@@ -113,7 +95,10 @@ async def cmd_start(
     await log(message)
 
 
-@user_command("cancel")
+@router.message(
+    ChatTypeFilter(chat_type=["private"]),
+    Command("cancel")
+)
 async def cmd_cancel(
     message: Message,
     state: FSMContext
@@ -159,13 +144,16 @@ async def cmd_cancel(
     if isinstance(msg_id, int) and msg_id != 0 and message.bot:
         try:
             await message.bot.delete_message(message.chat.id, msg_id)
-        except:
+        except BaseException:
             pass
 
     await log(message)
 
 
-@user_command("id")
+@router.message(
+    ChatTypeFilter(chat_type=["private"]),
+    Command("id")
+)
 async def cmd_id(
     message: Message,
     state: FSMContext
@@ -195,7 +183,10 @@ async def cmd_id(
     await log(message)
 
 
-@user_command("help")
+@router.message(
+    ChatTypeFilter(chat_type=["private"]),
+    Command("help")
+)
 async def cmd_help(
     message: Message,
     state: FSMContext

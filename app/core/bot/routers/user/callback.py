@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -15,31 +15,10 @@ from app.core.database.models import User
 router: Router = Router()
 
 
-def user_callback(
-    *filters: Any
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """
-    Декоратор для обработки коллбеков в приватных чатах.
-    Добавляет фильтр ChatTypeFilter(chat_type=["private"]).
-
-    Args:
-        *filters (Any): Дополнительные фильтры для callback_query.
-
-    Returns:
-        Callable[[Callable[..., Any]], Callable[..., Any]]: Декоратор для
-        обработчика коллбека.
-    """
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        return router.callback_query(
-            ChatTypeFilter(chat_type=["private"]),
-            *filters
-        )(func)
-
-    return decorator
-
-
-# --- Пример существующего callback ---
-@user_callback(F.data == "delete")
+@router.callback_query(
+    ChatTypeFilter(chat_type=["private"]),
+    F.data == "delete"
+)
 async def clbk_delete(callback: CallbackQuery) -> None:
     """Удаляет сообщение в чате и логирует вызов."""
     if isinstance(callback.message, Message):
@@ -47,11 +26,14 @@ async def clbk_delete(callback: CallbackQuery) -> None:
     await log(callback)
 
 
-@user_callback(CallbackNextFilter())
+@router.callback_query(
+    ChatTypeFilter(chat_type=["private"]),
+    CallbackNextFilter()
+)
 async def clbk_next(
     callback: CallbackQuery,
     state: FSMContext,
-    value: str
+    value: str,
 ) -> None:
     if not isinstance(callback.message, Message):
         return
@@ -94,7 +76,10 @@ async def clbk_next(
     await log(callback)
 
 
-@user_callback(F.data == "sending_data")
+@router.callback_query(
+    ChatTypeFilter(chat_type=["private"]),
+    F.data == "sending_data"
+)
 async def clbk_send(
     callback: CallbackQuery,
     state: FSMContext
@@ -137,7 +122,10 @@ async def clbk_send(
     await log(callback)
 
 
-@user_callback(F.data == "userback")
+@router.callback_query(
+    ChatTypeFilter(chat_type=["private"]),
+    F.data == "userback"
+)
 async def clbk_back(
     callback: CallbackQuery,
     state: FSMContext,
