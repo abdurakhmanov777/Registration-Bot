@@ -1,53 +1,70 @@
 from io import BytesIO
-from typing import Any, LiteralString
+from typing import Any
 
+from aiogram import types
 from aiogram.enums import ChatAction
-from aiogram.types import BufferedInputFile, CallbackQuery, Message
 
 from app.core.bot.services.generator import generate_text_image
+from app.core.bot.services.multi.context import MultiContext
 
 
 async def handle_send(
-    loc: Any,
-    tg_id: int,
-    event: CallbackQuery | Message,
+    ctx: MultiContext
 ) -> int | None:
-    # Определим бота и объект message вне зависимости от типа события
-    message: Any | Message = event.message if isinstance(
-        event, CallbackQuery
-    ) else event
+    """
+    Обрабатывает состояние отправки финального сообщения с изображением.
+
+    Args:
+        ctx (MultiContext): Контекст обработки шага.
+
+    Returns:
+        int | None: ID отправленного сообщения (для закрепления), либо None.
+    """
+
+    event = ctx.event
+    loc = ctx.loc
+    tg_id = ctx.tg_id
+
+    # Универсальный способ получить message
+    message: types.MaybeInaccessibleMessageUnion | None
+    if isinstance(event, types.CallbackQuery):
+        message = event.message
+    else:
+        message = event
 
     if not message or not message.bot:
-        return
+        return None
 
+    # Здесь генерируется код — логика временная, заменишь позже
     code = 1
 
+    # Анимация загрузки
     await message.bot.send_chat_action(
         chat_id=tg_id,
         action=ChatAction.UPLOAD_PHOTO
     )
 
     try:
+        # Генерация изображения
         buffer: BytesIO = await generate_text_image(str(code))
 
-        p1: Any
-        p2: Any
         p1, p2 = loc.template.send
-        caption: str = f"{p1}{code}{p2}"
+        caption = f"{p1}{code}{p2}"
 
-        msg: Message = await message.answer_photo(
-            photo=BufferedInputFile(buffer.read(), filename="code.png"),
+        # Отправка фото
+        msg: types.Message = await message.answer_photo(
+            photo=types.BufferedInputFile(buffer.read(), filename="code.png"),
             caption=caption,
-            parse_mode='HTML'
+            parse_mode="HTML"
         )
 
+        # Закрепление
         await message.bot.pin_chat_message(
             chat_id=message.chat.id,
             message_id=msg.message_id
         )
 
-        # await user_bot(tg_id=tg_id, bot_id=bot_id, action='upsert',
-        # msg_id=msg.message_id)
         return msg.message_id
+
     except BaseException:
-        pass
+        return None

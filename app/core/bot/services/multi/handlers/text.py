@@ -8,38 +8,36 @@ from typing import Any, Tuple
 from aiogram.types import InlineKeyboardMarkup
 
 from app.core.bot.services.keyboards.user import kb_text
+from app.core.bot.services.multi.context import MultiContext
 
 
 async def handle_text(
-    loc: Any,
-    loc_state: Any,
-    value: str,
-    tg_id: int,
-    data: str | None
+    ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup]:
     """
-    Обрабатывает текстовое состояние пользователя и формирует
-    сообщение и клавиатуру на основе шаблона локализации.
+    Обрабатывает текстовое состояние пользователя и формирует сообщение
+    и клавиатуру согласно шаблонам локализации.
 
     Args:
-        loc (Any): Объект локализации с шаблонами сообщений.
-        loc_state (Any): Состояние пользователя для обработки.
-        value (str): Ключ текущего состояния пользователя.
-        tg_id (int): Telegram ID пользователя.
-        data (str | None): Данные пользователя (не используются).
+        ctx (MultiContext): Контекст мульти-обработчика, содержащий
+                            update/event, loc, loc_state, value, tg_id, data и extra.
 
     Returns:
-        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и объект
-        клавиатуры для ответа пользователю.
+        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и объект клавиатуры.
     """
-    # Используем текст из состояния напрямую
+
+    loc = ctx.loc
+    loc_state = ctx.loc_state
+    state_key = ctx.value  # текущий ключ состояния, используется как backstate
+
+    # Формируем текст сообщения (только текст из состояния)
     text_message: str = loc_state.text
 
-    # Создаём клавиатуру для текстового состояния
-    keyboard_message: InlineKeyboardMarkup = kb_text(
+    # Формируем клавиатуру
+    keyboard: InlineKeyboardMarkup = kb_text(
         state=loc_state.keyboard,
-        backstate=value,
+        backstate=state_key,
         buttons=loc.button
     )
 
-    return text_message, keyboard_message
+    return text_message, keyboard

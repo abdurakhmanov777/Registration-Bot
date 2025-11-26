@@ -1,5 +1,5 @@
 """
-Модуль обработки состояния стартового сообщения пользователя
+Модуль обработки стартового состояния пользователя
 и формирования клавиатуры на основе локализации.
 """
 
@@ -8,39 +8,32 @@ from typing import Any, Tuple
 from aiogram.types import InlineKeyboardMarkup
 
 from app.core.bot.services.keyboards.user import kb_start
+from app.core.bot.services.multi.context import MultiContext
 
 
 async def handle_start(
-    loc: Any,
-    loc_state: Any,
-    value: str,
-    tg_id: int,
-    data: str | None
+    ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup]:
     """
-    Обрабатывает стартовое состояние пользователя и формирует
-    сообщение и клавиатуру на основе шаблона локализации.
+    Обрабатывает стартовое состояние пользователя и формирует сообщение
+    и клавиатуру на основе локализации.
 
     Args:
-        loc (Any): Объект локализации с шаблонами сообщений.
-        loc_state (Any): Состояние пользователя для обработки.
-        value (str): Ключ текущего состояния пользователя.
-        tg_id (int): Telegram ID пользователя.
-        data (str | None): Данные пользователя (не используется).
+        ctx (MultiContext): Контекст мульти-обработчика, содержащий update/event,
+                            loc, loc_state, value, tg_id, data и extra.
 
     Returns:
-        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и объект
-        клавиатуры для ответа пользователю.
+        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и объект клавиатуры.
     """
-    # Формируем текст стартового сообщения на основе шаблона
-    p1: Any
-    p2: Any
-    p1, p2 = loc.template.start
-    text_message: str = f"{p1}{loc_state.text}{p2}"
 
-    # Создаём стартовую клавиатуру
-    keyboard_message: InlineKeyboardMarkup = kb_start(
-        buttons=loc.button
-    )
+    loc = ctx.loc
+    loc_state = ctx.loc_state
 
-    return text_message, keyboard_message
+    # Формируем текст сообщения
+    prefix, suffix = loc.template.start
+    text_message: str = f"{prefix}{loc_state.text}{suffix}"
+
+    # Формируем клавиатуру
+    keyboard: InlineKeyboardMarkup = kb_start(buttons=loc.button)
+
+    return text_message, keyboard

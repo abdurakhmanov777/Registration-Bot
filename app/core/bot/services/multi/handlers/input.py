@@ -1,6 +1,6 @@
 """
 Модуль обработки состояния ввода пользователя и формирования
-сообщения с клавиатурой на основе локализации.
+сообщения и клавиатуры на основе локализации.
 """
 
 import re
@@ -9,46 +9,41 @@ from typing import Any, Tuple
 from aiogram.types import InlineKeyboardMarkup
 
 from app.core.bot.services.keyboards.user import kb_input
+from app.core.bot.services.multi.context import MultiContext
 from app.core.bot.services.requests.data.crud import manage_data
 from app.core.bot.utils.morphology.casing import lower_words
 from app.core.bot.utils.morphology.inflection import inflect_text
 
 
 async def handle_input(
-    loc: Any,
-    loc_state: Any,
-    value: str,
-    tg_id: int,
-    data: str | None
+    ctx: MultiContext
 ) -> Tuple[str, InlineKeyboardMarkup]:
     """
     Обрабатывает состояние ввода пользователя и формирует сообщение
     и клавиатуру на основе шаблона локализации.
 
     Args:
-        loc (Any): Объект локализации с шаблонами сообщений.
-        loc_state (Any): Состояние пользователя для обработки.
-        value (str): Ключ текущего состояния пользователя.
-        tg_id (int): Telegram ID пользователя.
-        data (str | None): Данные, введённые пользователем.
+        ctx (MultiContext): Контекст обработки шага.
 
     Returns:
-        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и объект
-        клавиатуры для ответа пользователю.
+        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и клавиатура.
     """
-    format_: str = loc_state.format
-    pattern: Any = loc_state.pattern
-    base_text: str = loc_state.text
-    template: Any = loc.template.input
-    p1: Any
-    p2: Any
-    p3: Any
 
-    error: bool = False
+    loc = ctx.loc
+    loc_state = ctx.loc_state
+    tg_id = ctx.tg_id
+    data = ctx.data
 
-    # Проверяем введённые пользователем данные на соответствие шаблону
+    format_ = loc_state.format
+    pattern = loc_state.pattern
+    base_text = loc_state.text
+    template = loc.template.input
+
+    error = False
+
+    # Проверка пользовательского ввода по regex
     if data is not None:
-        regex: re.Pattern[Any] = re.compile(pattern)
+        regex = re.compile(pattern)
         if regex.fullmatch(data):
             data = await manage_data(
                 tg_id=tg_id,
@@ -59,33 +54,45 @@ async def handle_input(
         else:
             error = True
     else:
-        # Получаем существующие данные для ключа, если данные не введены
-        data = await manage_data(tg_id=tg_id, action="get", key=base_text)
+        # Если пользователь ничего не ввёл — получить ранее сохранённые данные
+        data = await manage_data(
+            tg_id=tg_id,
+            action="get",
+            key=base_text
+        )
 
-    flag: bool = False
-
-    # Формируем текст сообщения в зависимости от наличия ошибки и данных
+    # Формирование текста сообщения
     if error:
         p1, p2 = template.error
-        text_message: str = f"{p1}{format_}{p2}"
+        text_message = f"{p1}{format_}{p2}"
+
+        show_next = False
 
     elif not data:
+        # пустое значение → склонение шаблона
         p1, p2, p3 = template.empty
-        processed_text: str = await inflect_text(
+
+        processed_text = await inflect_text(
             text=await lower_words(base_text, capitalize_first=False),
             case="винительный"
         )
-        text_message: str = f"{p1}{processed_text}{p2}{format_}{p3}"
+
+        text_message = f"{p1}{processed_text}{p2}{format_}{p3}"
+
+        show_next = False
 
     else:
-        flag = True
+        # поле заполнено
         p1, p2, p3 = template.filled
-        text_message: str = f"{p1}{base_text}{p2}{data}{p3}"
+        text_message = f"{p1}{base_text}{p2}{data}{p3}"
 
+        show_next = True
+
+    # Клавиатура
     keyboard_message: InlineKeyboardMarkup = kb_input(
         state=loc_state.keyboard,
-        backstate=value,
-        show_next=flag,
+        backstate=ctx.value,
+        show_next=show_next,
         buttons=loc.button
     )
 
