@@ -5,10 +5,9 @@
 с динамическими клавиатурами и локализацией.
 """
 
-from typing import Any, Callable, Dict
+from typing import Any
 
 from aiogram import Router
-from aiogram.filters import BaseFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message
 

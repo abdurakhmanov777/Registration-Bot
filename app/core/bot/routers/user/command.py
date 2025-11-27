@@ -5,7 +5,7 @@
 с динамическими клавиатурами и локализацией.
 """
 
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from aiogram import Router
 from aiogram.filters import Command
@@ -13,11 +13,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message
 
 from app.core.bot.routers.filters import ChatTypeFilter
-from app.core.bot.services.keyboards import kb_cancel, kb_delete
+from app.core.bot.services.keyboards import kb_delete
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.send import handle_send
-from app.core.bot.services.requests.data import manage_data_clear
 from app.core.bot.services.requests.user import manage_user, manage_user_state
 from app.core.database.models.user import User
 
