@@ -73,7 +73,7 @@ async def handle_send(
             photo=types.BufferedInputFile(buffer.read(), filename="code.png"),
             caption=caption,
             parse_mode="HTML",
-            # reply_markup=kb_send(buttons=loc.button)
+            reply_markup=kb_send(buttons=loc.button)
         )
 
         # Закрепление сообщения
@@ -85,4 +85,4 @@ async def handle_send(
         return msg.message_id
 
     except BaseException:
-        return None
+        return

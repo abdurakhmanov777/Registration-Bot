@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from app.core.bot.routers.filters import CallbackNextFilter, ChatTypeFilter
+from app.core.bot.services.keyboards.user import kb_cancel
 from app.core.bot.services.localization import Localization
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import handle_send, multi
@@ -176,6 +177,34 @@ async def clbk_back(
 )
 async def clbk_cancel(
     callback: CallbackQuery,
+    state: FSMContext
+) -> None:
+    """
+    Отправляет контакты админов с помощью кнопок.
+
+    Args:
+        message (Message): Входящее сообщение Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+    """
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Any = user_data.get("loc_user")
+    if not loc or not callback.message:
+        return
+    await callback.answer()
+    await callback.message.answer(
+        text=loc.cancel,
+        reply_markup=kb_cancel(buttons=loc.button)
+    )
+
+    await log(callback)
+
+
+@router.callback_query(
+    ChatTypeFilter(chat_type=["private"]),
+    F.data == "cancel_reg_confirm"
+)
+async def clbk_cancel_confirm(
+    callback: CallbackQuery,
     state: FSMContext,
 ) -> None:
     """
@@ -202,11 +231,11 @@ async def clbk_cancel(
     keyboard_message: InlineKeyboardMarkup
     text_message, keyboard_message = await multi(
         loc=loc,
-        value='1',
+        value="1",
         tg_id=callback.from_user.id
     )
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=text_message,
         reply_markup=keyboard_message
     )
@@ -214,7 +243,7 @@ async def clbk_cancel(
     msg_id: User | bool | None | int = await manage_user(
         tg_id=callback.from_user.id,
         action="msg_update",
-        msg_id=callback.message.message_id + 1
+        msg_id=callback.message.message_id
     )
     if isinstance(msg_id, int) and msg_id != 0 and callback.message.bot:
         try:
@@ -225,6 +254,6 @@ async def clbk_cancel(
         except BaseException:
             pass
 
-    await callback.message.delete()
+    # await callback.message.delete()
 
     await log(callback)

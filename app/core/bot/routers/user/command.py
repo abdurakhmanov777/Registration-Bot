@@ -97,34 +97,6 @@ async def cmd_start(
 
 @router.message(
     ChatTypeFilter(chat_type=["private"]),
-    Command("cancel")
-)
-async def cmd_cancel(
-    message: Message,
-    state: FSMContext
-) -> None:
-    """
-    Отправляет контакты админов с помощью кнопок.
-
-    Args:
-        message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
-    """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc:
-        return
-
-    await message.answer(
-        text=loc.cancel,
-        reply_markup=kb_cancel(buttons=loc.button)
-    )
-
-    await log(message)
-
-
-@router.message(
-    ChatTypeFilter(chat_type=["private"]),
     Command("id")
 )
 async def cmd_id(

@@ -221,12 +221,12 @@ def kb_cancel(
     Returns:
         types.InlineKeyboardMarkup: Сформированная клавиатура.
     """
-    confirm_text: str = buttons.confirm
-    cancel_text: str = buttons.cancel
-    return _make_keyboard([
-        [_make_button(confirm_text, "cancel_reg")],
-        [_make_button(cancel_text, "delete")]
-    ])
+    no_text: str = buttons.no
+    yes_text: str = buttons.yes
+    return _make_keyboard([[
+        _make_button(no_text, "delete"),
+        _make_button(yes_text, "cancel_reg_confirm")
+    ]])
 
 
 def kb_send(
