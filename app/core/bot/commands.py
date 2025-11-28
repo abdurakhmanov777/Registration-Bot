@@ -37,6 +37,10 @@ async def register_bot_commands(
             description="Запуск или перезапуск бота",
         ),
         BotCommand(
+            command="cancel",
+            description="Запуск или перезапуск бота",
+        ),
+        BotCommand(
             command="help",
             description="Техническая поддержка",
         ),
@@ -50,6 +54,10 @@ async def register_bot_commands(
     admin_keyboard: Sequence[BotCommand] = [
         BotCommand(
             command="start",
+            description="Запуск или перезапуск бота",
+        ),
+        BotCommand(
+            command="cancel",
             description="Запуск или перезапуск бота",
         ),
         BotCommand(

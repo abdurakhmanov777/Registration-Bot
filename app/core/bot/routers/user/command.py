@@ -14,6 +14,7 @@ from aiogram.types import InlineKeyboardMarkup, Message
 
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards import kb_delete
+from app.core.bot.services.keyboards.user import kb_cancel
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.send import handle_send
@@ -150,6 +151,34 @@ async def cmd_help(
     await message.answer(
         text=loc.help,
         reply_markup=kb_delete(buttons=loc.button)
+    )
+
+    await log(message)
+
+
+@router.message(
+    ChatTypeFilter(chat_type=["private"]),
+    Command("cancel")
+)
+async def clbk_cancel(
+    message: Message,
+    state: FSMContext
+) -> None:
+    """
+    Отправляет контакты админов с помощью кнопок.
+
+    Args:
+        message (Message): Входящее сообщение Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+    """
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Any = user_data.get("loc_user")
+    if not loc or not message:
+        return
+
+    await message.answer(
+        text=loc.cancel,
+        reply_markup=kb_cancel(buttons=loc.button)
     )
 
     await log(message)

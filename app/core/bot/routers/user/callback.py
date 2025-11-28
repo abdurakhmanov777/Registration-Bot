@@ -171,32 +171,32 @@ async def clbk_back(
     await log(callback)
 
 
-@router.callback_query(
-    ChatTypeFilter(chat_type=["private"]),
-    F.data == "cancel_reg"
-)
-async def clbk_cancel(
-    callback: CallbackQuery,
-    state: FSMContext
-) -> None:
-    """
-    Отправляет контакты админов с помощью кнопок.
+# @router.callback_query(
+#     ChatTypeFilter(chat_type=["private"]),
+#     F.data == "cancel_reg"
+# )
+# async def clbk_cancel(
+#     callback: CallbackQuery,
+#     state: FSMContext
+# ) -> None:
+#     """
+#     Отправляет контакты админов с помощью кнопок.
 
-    Args:
-        message (Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
-    """
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    if not loc or not callback.message:
-        return
-    await callback.answer()
-    await callback.message.answer(
-        text=loc.cancel,
-        reply_markup=kb_cancel(buttons=loc.button)
-    )
+#     Args:
+#         message (Message): Входящее сообщение Telegram.
+#         state (FSMContext): Контекст FSM для хранения данных пользователя.
+#     """
+#     user_data: Dict[str, Any] = await state.get_data()
+#     loc: Any = user_data.get("loc_user")
+#     if not loc or not callback.message:
+#         return
+#     await callback.answer()
+#     await callback.message.answer(
+#         text=loc.cancel,
+#         reply_markup=kb_cancel(buttons=loc.button)
+#     )
 
-    await log(callback)
+#     await log(callback)
 
 
 @router.callback_query(
