@@ -38,7 +38,7 @@ async def register_bot_commands(
         ),
         BotCommand(
             command="cancel",
-            description="Запуск или перезапуск бота",
+            description="Отмена регистрации",
         ),
         BotCommand(
             command="help",
@@ -58,7 +58,7 @@ async def register_bot_commands(
         ),
         BotCommand(
             command="cancel",
-            description="Запуск или перезапуск бота",
+            description="Отмена регистрации",
         ),
         BotCommand(
             command="help",
