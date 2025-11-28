@@ -227,21 +227,3 @@ def kb_cancel(
         _make_button(no_text, "delete"),
         _make_button(yes_text, "cancel_reg_confirm")
     ]])
-
-
-def kb_send(
-    buttons: Any
-) -> types.InlineKeyboardMarkup:
-    """Создаёт клавиатуру с кнопкой 'Закрыть окно'.
-
-    Args:
-        buttons (Any): Объект локализации с текстами кнопок.
-
-    Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
-    """
-    cancel_reg_text: str = buttons.cancel_reg
-
-    return _make_keyboard([
-        [_make_button(cancel_reg_text, "cancel_reg")]
-    ])

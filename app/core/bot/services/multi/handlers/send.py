@@ -10,7 +10,6 @@ from aiogram.enums import ChatAction
 
 from app.core.bot.services.generator import generate_image
 from app.core.bot.services.generator.generator_code import generate_code
-from app.core.bot.services.keyboards.user import kb_send
 from app.core.bot.services.requests.user import manage_user
 from app.core.database.models.user import User
 
@@ -72,8 +71,7 @@ async def handle_send(
         msg: types.Message = await message.answer_photo(
             photo=types.BufferedInputFile(buffer.read(), filename="code.png"),
             caption=caption,
-            parse_mode="HTML",
-            # reply_markup=kb_send(buttons=loc.button)
+            parse_mode="HTML"
         )
 
         # Закрепление сообщения
