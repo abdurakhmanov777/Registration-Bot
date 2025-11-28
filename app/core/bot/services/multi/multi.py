@@ -1,9 +1,9 @@
 """
-Модуль маршрутизации формирования сообщений и клавиатур
-для пользователя на основе локализации и состояния.
+Модуль маршрутизации генерации сообщений и клавиатур для пользователя
+на основе локализации и текущего состояния.
 """
 
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 from aiogram import types
 
@@ -13,67 +13,60 @@ from .context import MultiContext
 from .handlers.end import handle_end
 from .handlers.input import handle_input
 from .handlers.select import handle_select
-# from .handlers.send import handle_send
 from .handlers.start import handle_start
 from .handlers.text import handle_text
+
+HANDLERS: Dict[str, Callable[[MultiContext], Any]] = {
+    "start": handle_start,
+    "input": handle_input,
+    "select": handle_select,
+    "text": handle_text,
+    "end": handle_end,
+}
 
 
 async def multi(
     loc: Any,
     value: str,
     tg_id: int,
-    data: str | None = None,
-    data_select: list[str] | None = None,
-    event: types.CallbackQuery | types.Message | None = None,
-    **extra: Any
+    data: Optional[str] = None,
+    data_select: Optional[List[str]] = None,
+    event: Optional[Union[types.CallbackQuery, types.Message]] = None,
 ) -> Tuple[str, types.InlineKeyboardMarkup]:
-    """
-    Формирует текст сообщения и клавиатуру для пользователя
-    в зависимости от типа состояния.
+    """Формирует текст сообщения и клавиатуру на основе состояния пользователя."""
 
-    Args:
-        loc (Any): Объект локализации.
-        value (str): Ключ состояния пользователя.
-        tg_id (int): Telegram ID пользователя.
-        data (str | None): Данные, введённые пользователем.
-        extra (dict): Дополнительные параметры.
+    # Обработка специального состояния "1" без локализации
+    if value == "1":
+        loc_state: Optional[Any] = None
+        handler: Callable[[MultiContext], Any] = handle_start
 
-    Returns:
-        Tuple[str, InlineKeyboardMarkup]: Текст сообщения и клавиатура.
-    """
+    else:
+        loc_state = getattr(loc, f"userstate_{value}")
 
-    loc_state: Any = getattr(loc, f"userstate_{value}")
-    type_message: str = loc_state.type
+        # Pylance теперь знает, что loc_state точно не None
+        loc_state_typed: Any = cast(Any, loc_state)
 
-    context = MultiContext(
+        handler_type: str = loc_state_typed.type
+        handler = HANDLERS.get(handler_type, handle_start)
+
+    context: MultiContext = MultiContext(
         loc=loc,
         loc_state=loc_state,
         value=value,
         tg_id=tg_id,
         data=data,
         event=event,
-        extra=extra or {},
-    )
-
-    handler_map: dict[str, Callable[[MultiContext], Any]] = {
-        "input": handle_input,
-        "select": handle_select,
-        "text": handle_text,
-        "start": handle_start,
-        "end": handle_end,
-    }
-
-    handler: Callable[[MultiContext], Any] = handler_map.get(
-        type_message,
-        handle_start
     )
 
     if data_select:
+        key: str = data_select[0]
+        value_to_store: str = data_select[1]
+
         await manage_data(
             tg_id=tg_id,
             action="create_or_update",
-            key=data_select[0],
-            value=data_select[1]
+            key=key,
+            value=value_to_store,
         )
 
     return await handler(context)

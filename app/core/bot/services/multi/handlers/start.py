@@ -28,13 +28,12 @@ async def handle_start(
     """
 
     loc: Any = ctx.loc
-    loc_state: Any = ctx.loc_state
 
     # Формируем текст сообщения
     p1: str
     p2: str
     p1, p2 = loc.template.start
-    text_message: str = f"{p1}{loc_state.text}{p2}"
+    text_message: str = f"{p1}{loc.info.name}{p2}"
 
     # Формируем клавиатуру
     keyboard: InlineKeyboardMarkup = kb_start(buttons=loc.button)

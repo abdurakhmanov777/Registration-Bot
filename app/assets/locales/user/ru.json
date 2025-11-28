@@ -1,7 +1,6 @@
 {
-    "userstate_1": {
-        "type": "start",
-        "text": "Батутная ночь"
+    "info": {
+        "name": "Батутная ночь"
     },
     "userstate_2": {
         "type": "input",

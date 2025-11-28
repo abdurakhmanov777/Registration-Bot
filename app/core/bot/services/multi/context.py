@@ -21,4 +21,3 @@ class MultiContext:
     tg_id: int = 0
     data: str | None = None
     event: Optional[types.CallbackQuery | types.Message] = None
-    extra: Dict[str, Any] | None = None
