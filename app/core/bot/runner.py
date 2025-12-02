@@ -6,7 +6,6 @@
 """
 
 import asyncio
-import sys
 from typing import Optional
 
 from aiogram import Bot, Dispatcher
