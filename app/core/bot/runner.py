@@ -46,10 +46,6 @@ class FilterAiogramStderr:
         pass
 
 
-# Перенаправляем stderr в фильтр
-sys.stderr = FilterAiogramStderr()
-
-
 async def run_bot() -> None:
     """
     Асинхронная инициализация и запуск Telegram-бота.
