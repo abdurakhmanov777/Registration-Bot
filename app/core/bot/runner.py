@@ -17,34 +17,6 @@ from .dispatcher import setup_dispatcher
 from .factory import create_bot
 
 
-class FilterAiogramStderr:
-    """
-    Класс для подавления ненужных сообщений stderr от Aiogram.
-
-    Игнорирует следующие строки:
-        - "Failed to fetch updates"
-        - "Sleep for ..."
-    """
-
-    def write(
-        self,
-        message: str,
-    ) -> None:
-        """
-        Обрабатывает строку сообщения и фильтрует ненужные.
-
-        Args:
-            message (str): Сообщение для обработки.
-        """
-        msg: str = message.strip()
-        if not msg or "Failed to fetch updates" in msg or "Sleep for" in msg:
-            return
-
-    def flush(self) -> None:
-        """Метод-заглушка для интерфейса file-like объектов."""
-        pass
-
-
 async def run_bot() -> None:
     """
     Асинхронная инициализация и запуск Telegram-бота.
@@ -89,13 +61,11 @@ async def run_bot() -> None:
 
     except (asyncio.CancelledError, KeyboardInterrupt):
         logger.debug("Бот остановлен")
-    except Exception as error:
-        logger.exception(f"Ошибка при запуске бота: {error}")
+    except Exception as e:
+        logger.exception(f"Ошибка при запуске бота: {e}")
     finally:
         if bot:
             try:
                 await bot.session.close()
-            except Exception as close_error:
-                logger.exception(
-                    f"Ошибка при закрытии сессии бота: {close_error}"
-                )
+            except Exception as e:
+                logger.exception(f"Ошибка при закрытии сессии бота: {e}")
