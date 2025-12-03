@@ -42,7 +42,7 @@ async def handle_select(
     # Формирование клавиатуры выбора
     keyboard: InlineKeyboardMarkup = kb_select(
         name=base_text,
-        data=loc_state.keyboard,
+        options=loc_state.options,
         buttons=loc.buttons
     )
 

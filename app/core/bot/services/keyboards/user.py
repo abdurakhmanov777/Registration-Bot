@@ -5,11 +5,11 @@
 и выбора из списка опций различной длины.
 """
 
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from aiogram import types
 
-from .make import make_button, make_keyboard
+from .make import build_keyboard
 
 
 def kb_start(
@@ -17,16 +17,16 @@ def kb_start(
 ) -> types.InlineKeyboardMarkup:
     """Создаёт клавиатуру с кнопкой согласия пользователя.
 
-    Используется на старте взаимодействия с ботом.
-
     Args:
-        buttons (Any): Объект локализации с текстами кнопок.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопкой согласия.
     """
-    consent_text: str = buttons.consent
-    return make_keyboard([[make_button(consent_text, "user_2")]])
+    rows: List[List[Tuple[str, str]]] = [
+        [(buttons.consent, "user_2")]
+    ]
+    return build_keyboard(rows)
 
 
 def kb_end(
@@ -35,18 +35,16 @@ def kb_end(
     """Создаёт клавиатуру с кнопками 'Далее' и 'Назад'.
 
     Args:
-        buttons (Any): Объект локализации с текстами кнопок.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопками "Далее"
+        и "Назад".
     """
-    send_text: str = buttons.send
-    back_text: str = buttons.back
-
-    return make_keyboard([
-        [make_button(send_text, "sending_data")],
-        [make_button(back_text, "userback")]
-    ])
+    rows: List[List[Tuple[str, str]]] = [
+        [(buttons.back, "userback"), (buttons.send, "sending_data")]
+    ]
+    return build_keyboard(rows)
 
 
 def kb_text(
@@ -54,29 +52,22 @@ def kb_text(
     backstate: str,
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
-    """
-    Создаёт клавиатуру с кнопками 'Далее' и 'Назад'.
-
-    Если backstate не равен '2', добавляется кнопка 'Назад'.
+    """Создаёт клавиатуру с кнопками 'Далее' и 'Назад' при необходимости.
 
     Args:
-        state (str): Текущее состояние пользователя.
-        backstate (str): Предыдущее состояние пользователя.
-        buttons (Any): Объект локализации с текстами кнопок.
+        state (str): Текущий шаг состояния пользователя.
+        backstate (str): Состояние, когда кнопка "Назад" не показывается.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопками "Далее"
+        и "Назад".
     """
-    next_text: str = buttons.next
-    keyboard_rows: List[List[types.InlineKeyboardButton]] = [
-        [make_button(next_text, f"user_{state}")]
-    ]
-
-    if backstate != "2":
-        back_text: str = buttons.back
-        keyboard_rows.append([make_button(back_text, "userback")])
-
-    return make_keyboard(keyboard_rows)
+    rows: List[List[Tuple[str, str]]] = [[
+        *([(buttons.back, "userback")] if backstate != "2" else []),
+        *([(buttons.next, f"user_{state}")]),
+    ]]
+    return build_keyboard(rows)
 
 
 def kb_input(
@@ -85,123 +76,106 @@ def kb_input(
     show_next: bool,
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
-    """
-    Создаёт клавиатуру для ввода с опциональной кнопкой 'Далее'.
-
-    Если show_next = False, отображается только кнопка 'Назад'.
+    """Создаёт клавиатуру для ввода с опциональной кнопкой 'Далее'.
 
     Args:
-        state (str): Текущее состояние пользователя.
-        backstate (str): Предыдущее состояние пользователя.
-        show_next (bool): Показывать ли кнопку 'Далее'.
-        buttons (Any): Объект локализации с текстами кнопок.
+        state (str): Текущий шаг состояния пользователя.
+        backstate (str): Состояние, когда кнопка "Назад" не показывается.
+        show_next (bool): Показывать кнопку "Далее".
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопками "Далее"
+        и "Назад".
     """
-    keyboard_rows: List[List[types.InlineKeyboardButton]] = []
-
-    if show_next:
-        next_text: str = getattr(buttons, "next")
-        keyboard_rows.append([make_button(next_text, f"user_{state}")])
-
-    if backstate != "2":
-        back_text: str = getattr(buttons, "back")
-        keyboard_rows.append([make_button(back_text, "userback")])
-
-    return make_keyboard(keyboard_rows)
+    rows: List[List[Tuple[str, str]]] = [[
+        *([(buttons.back, "userback")] if backstate != "2" else []),
+        *([(buttons.next, f"user_{state}")] if show_next else []),
+    ]]
+    return build_keyboard(rows)
 
 
 def kb_select(
     name: str,
-    data: List[Tuple[str, str, bool]],
+    options: List[Dict[str, Any]],
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
-    """
-    Создает клавиатуру с длинными и короткими кнопками.
-
-    Длинные кнопки занимают отдельную строку, короткие кнопки
-    группируются по 2 или 3 в ряд. Внизу всегда добавляется кнопка
-    "Назад".
+    """Создаёт инлайн-клавиатуру на основе списка опций.
 
     Args:
-        data (List[Tuple[str, str, bool]]):
-            Список кортежей с кнопками. Каждый кортеж содержит:
-                - text (str): Текст кнопки.
-                - state (str): Состояние для callback.
-                - flag (bool): Флаг для записи в БД.
-        buttons (Any): Объект локализации с текстами кнопок.
+        name (str): Имя группы опций.
+        options (List[Dict[str, Any]]): Список словарей с полями "text",
+            "next" и опциональным "save".
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная инлайн-клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопками опций и
+        кнопкой "Назад".
     """
     back_text: str = buttons.back
-    long_buttons: List[List[types.InlineKeyboardButton]] = []
-    short_buttons: List[types.InlineKeyboardButton] = []
-    text: str
-    state: str
-    flag: bool
-    for text, state, flag in data:
+    rows: List[List[Tuple[str, str]]] = []
+    current_row: List[Tuple[str, str]] = []
+    current_length: int = 0
+    max_length_per_row: int = 25
+
+    for option in options:
+        text: str = option["text"]
+        next_step: str = option["next"]
+        save: bool = option.get("save") is True
         callback_data: str = (
-            f"user_{state}_{text}_{name}"
-            if flag else f"user_{state}"
+            f"user_{next_step}_{text}_{name}" if save else f"user_{next_step}"
         )
-        button: types.InlineKeyboardButton = make_button(text, callback_data)
 
-        if len(text) > 13:
-            long_buttons.append([button])
-        else:
-            short_buttons.append(button)
+        # Перенос ряда, если кнопка не помещается
+        if current_length + len(text) > max_length_per_row:
+            if current_row:
+                rows.append(current_row)
+            current_row = []
+            current_length = 0
 
-    # Формируем ряды для коротких кнопок
-    short_rows: List[List[types.InlineKeyboardButton]] = []
-    if 1 <= len(short_buttons) <= 3:
-        short_rows.append(short_buttons)
-    else:
-        for i in range(0, len(short_buttons), 2):
-            short_rows.append(short_buttons[i:i + 2])
+        current_row.append((text, callback_data))
+        current_length += len(text)
 
-    keyboard_rows: List[List[types.InlineKeyboardButton]] = (
-        long_buttons + short_rows + [[make_button(back_text, "userback")]]
-    )
+    if current_row:
+        rows.append(current_row)
 
-    return make_keyboard(keyboard_rows)
+    # Кнопка "Назад"
+    rows.append([(back_text, "userback")])
+    return build_keyboard(rows)
 
 
 def kb_delete(
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
-    """
-    Создаёт клавиатуру с кнопкой 'Закрыть окно'.
+    """Создаёт клавиатуру с кнопкой 'Закрыть окно'.
 
     Args:
-        buttons (Any): Объект локализации с текстами кнопок.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопкой закрытия.
     """
-    delete_text: str = buttons.delete
-    return make_keyboard([[make_button(delete_text, "delete")]])
+    rows: List[List[Tuple[str, str]]] = [
+        [(buttons.delete, "delete")]
+    ]
+    return build_keyboard(rows)
 
 
 def kb_cancel_confirm(
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
-    """
-    Создаёт клавиатуру с кнопкой подтверждения отмены регистрации.
+    """Создаёт клавиатуру с кнопкой подтверждения отмены регистрации.
 
     Args:
-        buttons (Any): Объект локализации с текстами кнопок.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопками "Да" и "Нет".
     """
-    no_text: str = buttons.no
-    yes_text: str = buttons.yes
-    return make_keyboard([[
-        make_button(no_text, "delete"),
-        make_button(yes_text, "cancel_reg_confirm")
-    ]])
+    rows: List[List[Tuple[str, str]]] = [
+        [(buttons.no, "delete"), (buttons.yes, "cancel_reg_confirm")]
+    ]
+    return build_keyboard(rows)
 
 
 def kb_cancel(
@@ -210,12 +184,12 @@ def kb_cancel(
     """Создаёт клавиатуру с кнопкой 'Закрыть окно'.
 
     Args:
-        buttons (Any): Объект локализации с текстами кнопок.
+        buttons (Any): Объект с локализованными текстами кнопок.
 
     Returns:
-        types.InlineKeyboardMarkup: Сформированная клавиатура.
+        types.InlineKeyboardMarkup: Клавиатура с кнопкой отмены.
     """
-    cancel_text: str = buttons.cancel_reg
-    return make_keyboard([[
-        make_button(cancel_text, "cancel_reg"),
-    ]])
+    rows: List[List[Tuple[str, str]]] = [[
+        (buttons.cancel_reg, "cancel_reg")
+    ]]
+    return build_keyboard(rows)

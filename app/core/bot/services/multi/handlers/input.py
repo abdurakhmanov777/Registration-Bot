@@ -43,7 +43,7 @@ async def handle_input(
 
     error_occurred: bool = False
     text_message: str
-    show_next: bool
+    show_next: bool = loc_state.required
     p1: str
     p2: str
     p3: str
@@ -70,7 +70,7 @@ async def handle_input(
     if error_occurred:
         p1, p2 = template.error
         text_message = f"{p1}{format_}{p2}"
-        show_next = False
+        show_next = not show_next or False
 
     elif not user_input:
         # Пустое значение → склонение шаблона
@@ -81,7 +81,7 @@ async def handle_input(
             case="винительный"
         )
         text_message = f"{p1}{processed_text}{p2}{format_}{p3}"
-        show_next = False
+        show_next = not show_next or False
 
     else:
         # Поле заполнено
