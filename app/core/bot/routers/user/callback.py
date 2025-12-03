@@ -1,9 +1,15 @@
+"""
+Модуль для обработки callback-запросов Telegram-бота.
+
+Содержит обработчики для навигации по состояниям пользователя,
+удаления сообщений, отправки данных, возврата к предыдущему состоянию
+и отмены регистрации.
+"""
+
 from typing import Any, Dict, Optional
 
-from aiogram import F, Router
+from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (CallbackQuery, InlineKeyboardMarkup,
-                           LinkPreviewOptions, Message)
 
 from app.core.bot.routers.filters import CallbackNextFilter, ChatTypeFilter
 from app.core.bot.services.keyboards.user import kb_cancel_confirm
@@ -21,9 +27,13 @@ router: Router = Router()
     ChatTypeFilter(chat_type=["private"]),
     F.data == "delete"
 )
-async def clbk_delete(callback: CallbackQuery) -> None:
-    """Удаляет сообщение в чате и логирует вызов."""
-    if isinstance(callback.message, Message):
+async def clbk_delete(callback: types.CallbackQuery) -> None:
+    """Удаляет сообщение пользователя и логирует событие.
+
+    Args:
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
+    """
+    if isinstance(callback.message, types.Message):
         await callback.message.delete()
     await log(callback)
 
@@ -33,22 +43,26 @@ async def clbk_delete(callback: CallbackQuery) -> None:
     CallbackNextFilter()
 )
 async def clbk_next(
-    callback: CallbackQuery,
+    callback: types.CallbackQuery,
     state: FSMContext,
     value: str,
 ) -> None:
-    if not isinstance(callback.message, Message):
+    """Обрабатывает переход к следующему состоянию пользователя.
+
+    Получает данные текущего пользователя из FSMContext, вызывает функцию
+    multi для формирования текста сообщения и клавиатуры, редактирует
+    текущее сообщение и обновляет состояние пользователя.
+
+    Args:
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        value (str): Значение текущего действия/состояния.
+    """
+    if not isinstance(callback.message, types.Message):
         return
 
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get("loc_user")
-    if not loc:
-        return
-
-    # Формируем текст сообщения
-    text_message: str
-    keyboard_message: InlineKeyboardMarkup
-    link_opts: LinkPreviewOptions
+    loc: Any = user_data.get("loc_user")
 
     data_select: list[str] | None = None
     if len(value) == 3:
@@ -61,7 +75,6 @@ async def clbk_next(
         data_select=data_select
     )
 
-    # Отправляем сообщение пользователю (короткий вариант)
     try:
         await callback.message.edit_text(
             text=text_message,
@@ -76,7 +89,6 @@ async def clbk_next(
     except BaseException:
         pass
 
-    # Логируем событие
     await log(callback)
 
 
@@ -85,16 +97,23 @@ async def clbk_next(
     F.data == "sending_data"
 )
 async def clbk_send(
-    callback: CallbackQuery,
+    callback: types.CallbackQuery,
     state: FSMContext
 ) -> None:
-    if not isinstance(callback.message, Message):
+    """Обрабатывает отправку данных пользователем.
+
+    Формирует сообщение для отправки, обновляет ID сообщения
+    в базе и изменяет состояние пользователя.
+
+    Args:
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+    """
+    if not isinstance(callback.message, types.Message):
         return
 
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get("loc_user")
-    if not loc:
-        return
+    loc: Any = user_data.get("loc_user")
 
     msg_id: int | None = await handle_send(
         loc=loc,
@@ -131,21 +150,23 @@ async def clbk_send(
     F.data == "userback"
 )
 async def clbk_back(
-    callback: CallbackQuery,
+    callback: types.CallbackQuery,
     state: FSMContext,
 ) -> None:
-    if not isinstance(callback.message, Message):
+    """Возвращает пользователя к предыдущему состоянию.
+
+    Получает предыдущее состояние из базы, формирует текст сообщения
+    и клавиатуру, редактирует текущее сообщение.
+
+    Args:
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
+        state (FSMContext): Контекст FSM для хранения данных пользователя.
+    """
+    if not isinstance(callback.message, types.Message):
         return
 
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Optional[Localization] = user_data.get("loc_user")
-    if not loc:
-        return
-
-    # Формируем текст сообщения
-    text_message: str
-    keyboard_message: InlineKeyboardMarkup
-    link_opts: LinkPreviewOptions
+    loc: Any = user_data.get("loc_user")
 
     backstate: bool | str | list[str] | None = await manage_user_state(
         callback.from_user.id,
@@ -162,7 +183,6 @@ async def clbk_back(
 
     await callback.answer()
 
-    # Отправляем сообщение пользователю (короткий вариант)
     try:
         await callback.message.edit_text(
             text=text_message,
@@ -172,7 +192,6 @@ async def clbk_back(
     except BaseException:
         pass
 
-    # Логируем событие
     await log(callback)
 
 
@@ -181,20 +200,19 @@ async def clbk_back(
     F.data == "cancel_reg"
 )
 async def clbk_cancel(
-    callback: CallbackQuery,
+    callback: types.CallbackQuery,
     state: FSMContext
 ) -> None:
-    """
-    Отправляет контакты админов с помощью кнопок.
+    """Отправляет пользователю сообщение с кнопками контактов админов.
 
     Args:
-        message (Message): Входящее сообщение Telegram.
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
         state (FSMContext): Контекст FSM для хранения данных пользователя.
     """
     await callback.answer()
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
-    if not loc or not callback.message:
+    if not callback.message:
         return
 
     await callback.message.answer(
@@ -210,22 +228,21 @@ async def clbk_cancel(
     F.data == "cancel_reg_confirm"
 )
 async def clbk_cancel_confirm(
-    callback: CallbackQuery,
+    callback: types.CallbackQuery,
     state: FSMContext,
 ) -> None:
-    """
-    Обрабатывает команду /cancel.
+    """Подтверждает отмену регистрации пользователя.
 
-    Очищает состояние пользователя и отправляет сообщение
-    с клавиатурой по умолчанию.
+    Очищает состояние пользователя и данные, отправляет
+    начальное сообщение с клавиатурой по умолчанию.
 
     Args:
-        message (Message): Входящее сообщение Telegram.
+        callback (types.CallbackQuery): Callback-запрос от Telegram.
         state (FSMContext): Контекст FSM для хранения данных пользователя.
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
-    if not loc or not isinstance(callback.message, Message):
+    if not isinstance(callback.message, types.Message):
         return
 
     await manage_user_state(
@@ -233,9 +250,6 @@ async def clbk_cancel_confirm(
         "clear"
     )
     await manage_data_clear(tg_id=callback.from_user.id)
-    text_message: str
-    keyboard_message: InlineKeyboardMarkup
-    link_opts: LinkPreviewOptions
 
     text_message, keyboard_message, link_opts = await multi(
         loc=loc,
@@ -262,7 +276,5 @@ async def clbk_cancel_confirm(
             )
         except BaseException:
             pass
-
-    # await callback.message.delete()
 
     await log(callback)
