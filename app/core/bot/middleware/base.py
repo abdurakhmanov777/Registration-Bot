@@ -1,16 +1,13 @@
 """
 Базовый middleware для Aiogram.
 
-Поддерживает:
-    - подсчёт вызовов хэндлера,
-    - удаление события после обработки,
-    - передачу доп. параметров в data,
-    - проверку роли администратора,
-    - удаление сообщений с неподдерж. типами,
-    - динамическое управление разрешёнными типами.
+Модуль предоставляет универсальный middleware для обработки событий
+Telegram-бота. Поддерживает фильтрацию типов сообщений, обновление
+локализации, передачу дополнительных параметров и безопасное удаление
+сообщений после обработки.
 """
 
-from typing import Any, Awaitable, Callable, Literal, Optional, Set
+from typing import Any, Awaitable, Callable, Dict, Literal, Optional, Set
 
 from aiogram import BaseMiddleware
 from aiogram.types import ContentType, Message
@@ -22,13 +19,21 @@ from .refresh import refresh_fsm_data
 
 class MwBase(BaseMiddleware):
     """
-    Базовый middleware для обработки событий.
+    Базовый middleware для обработки входящих событий.
 
-    Args:
-        delete_event (bool): Удалять событие после обработки.
-        role (Literal["user","admin"]): Роль для локализации.
-        allowed_types (Optional[Set[str]]): Разрешённые типы сообщений.
-        **extra_data: Доп. параметры для передачи в data.
+    Middleware выполняет несколько функций:
+    - фильтрует события по допустимым типам контента;
+    - загружает данные локализации в зависимости от роли пользователя;
+    - при необходимости удаляет сообщение после обработки;
+    - добавляет дополнительные данные в объект `data`.
+
+    Attributes:
+        delete_event (bool): Флаг удаления сообщения после обработки.
+        role (Literal["user", "admin"]): Роль, определяющая набор
+            локализационных данных.
+        extra_data (Dict[str, Any]): Дополнительные параметры,
+            передаваемые в `data`.
+        allowed_types (Set[str]): Разрешённые типы сообщений.
     """
 
     def __init__(
@@ -38,74 +43,75 @@ class MwBase(BaseMiddleware):
         allowed_types: Optional[Set[str]] = None,
         **extra_data: Any,
     ) -> None:
-        self.counter: int = 0
+        """
+        Инициализация middleware.
+
+        Parameters:
+            delete_event (bool): Удалять ли сообщение после обработки.
+            role (Literal["user", "admin"]): Роль для локализации.
+            allowed_types (Optional[Set[str]]): Разрешённые типы контента.
+            **extra_data (Any): Дополнительные параметры.
+        """
         self.delete_event: bool = delete_event
         self.role: Literal["user", "admin"] = role
-        self.extra_data: dict[str, Any] = extra_data
-        # Разрешённые типы сообщений
-        self.allowed_types: Set[str] = {ContentType.TEXT}
-        if allowed_types:
-            self.allowed_types.update(allowed_types)
+        self.extra_data: Dict[str, Any] = extra_data
+        self.allowed_types: Set[str] = (
+            {ContentType.TEXT} | (allowed_types or set())
+        )
 
     async def __call__(
         self,
-        handler: Callable[[Any, dict[str, Any]], Awaitable[Any]],
+        handler: Callable[
+            [Any, Dict[str, Any]],
+            Awaitable[Any]
+        ],
         event: Optional[Any] = None,
-        data: Optional[dict[str, Any]] = None,
+        data: Dict[str, Any] = {},
     ) -> Any:
         """
-        Основной метод middleware.
+        Выполнение middleware перед вызовом хэндлера.
 
-        Загружает локализацию, обновляет данные и проверяет роль.
-        Удаляет сообщения с неподдерживаемыми типами.
+        Обрабатывает событие: фильтрует сообщения по типу, обновляет
+        локализацию и вызывает хэндлер. В случае ошибки логирует событие.
 
-        Args:
-            handler (Callable[[Any, dict[str, Any]], Awaitable[Any]]):
-                Хэндлер для обработки события.
-            event (Optional[Any]): Событие Message или CallbackQuery.
-            data (Optional[dict[str, Any]]): Данные между middleware
-                и хэндлером.
+        Parameters:
+            handler (Callable): Функция-хэндлер для обработки события.
+            event (Optional[Any]): Входящее событие Aiogram.
+            data (Dict[str, Any]): Общий словарь данных.
 
         Returns:
             Any: Результат работы хэндлера.
         """
-        if event is None:
-            return await handler(event, data or {})
 
-        # Фильтруем сообщения по разрешённым типам
-        if isinstance(
-            event,
-            Message
-        ) and event.content_type not in self.allowed_types:
+        data.update(self.extra_data)
+
+        if (
+            isinstance(event, Message)
+            and event.content_type not in self.allowed_types
+        ):
             try:
                 await event.delete()
             except Exception:
                 pass
             return None
 
-        # Инициализация data
-        data = data or {}
-        self.counter += 1
-
-        # Обновляем счётчик и добавляем доп. данные
-        data["counter"] = self.counter
-        data.update(self.extra_data)
-
-        # Загружаем локализацию в зависимости от роли
-        await refresh_fsm_data(data, event, role=self.role)
+        await refresh_fsm_data(
+            data=data,
+            event=event,
+            role=self.role,
+        )
 
         try:
-            # Вызываем хэндлер
             result: Any = await handler(event, data)
 
-            # Удаляем событие после обработки, если включено
-            if self.delete_event and hasattr(event, "delete"):
+            if self.delete_event and isinstance(event, Message):
                 try:
                     await event.delete()
                 except Exception:
                     pass
 
             return result
-        except Exception as e:
-            # Логируем ошибки
-            await log_error(event, error=e)
+
+        except Exception as error:
+            await log_error(event, error=error)
+            return None
