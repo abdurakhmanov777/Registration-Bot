@@ -33,7 +33,7 @@ async def handle_start(
     p1: str
     p2: str
     p1, p2 = loc.messages.template.start
-    text_message: str = f"{p1}{loc.info.name}{p2}"
+    text_message: str = f"{p1}{loc.event.name}{p2}"
 
     # Формируем клавиатуру
     keyboard: InlineKeyboardMarkup = kb_start(buttons=loc.buttons)

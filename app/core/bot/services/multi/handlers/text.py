@@ -29,14 +29,14 @@ async def handle_text(
 
     loc: Any = ctx.loc
     loc_state: Any = ctx.loc_state
-    state_key: Any = ctx.value  # Текущий ключ состояния (backstate)
+    state_key: Any = loc_state.id  # Текущий ключ состояния (backstate)
 
     # Формируем текст сообщения
     text_message: str = loc_state.text
 
     # Формируем клавиатуру
     keyboard: InlineKeyboardMarkup = kb_text(
-        state=loc_state.keyboard,
+        state=loc_state.next,
         backstate=state_key,
         buttons=loc.buttons
     )

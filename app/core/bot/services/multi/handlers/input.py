@@ -91,8 +91,8 @@ async def handle_input(
 
     # Формирование клавиатуры
     keyboard: InlineKeyboardMarkup = kb_input(
-        state=loc_state.keyboard,
-        backstate=ctx.value,
+        state=loc_state.next,
+        backstate=loc_state.id,
         show_next=show_next,
         buttons=loc.buttons
     )

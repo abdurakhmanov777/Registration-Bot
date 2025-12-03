@@ -56,7 +56,7 @@ async def msg_user(
         return
 
     # Проверяем, что состояние соответствует "value"
-    state_obj: Any | None = getattr(loc, value, None)
+    state_obj: Any | None = getattr(loc.steps, value, None)
     if not state_obj or state_obj.type != "input":
         return
 

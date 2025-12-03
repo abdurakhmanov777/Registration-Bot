@@ -38,12 +38,12 @@ async def handle_end(
         raise ValueError(
             f"Некорректный формат состояний пользователя: {states!r}"
         )
-
+    loc: Any = ctx.loc
     # Формируем список ключей данных, которые нужно оставить
     keep_keys: List[str] = [
         data.text
         for state in states
-        if (data := getattr(ctx.loc, state, None)) is not None
+        if (data := getattr(loc.steps, state, None)) is not None
         and getattr(data, "type", None) not in ("start", "end")
         and getattr(data, "text", None) is not None
     ]
@@ -62,12 +62,12 @@ async def handle_end(
     # Получаем шаблон локализации для начала и конца сообщения
     start_template: str
     end_template: str
-    start_template, end_template = ctx.loc.messages.template.end
+    start_template, end_template = loc.messages.template.end
 
     text_message: str = f"{start_template}{items_text}{end_template}"
 
     # Формируем клавиатуру завершения
-    keyboard: InlineKeyboardMarkup = kb_end(buttons=ctx.loc.buttons)
+    keyboard: InlineKeyboardMarkup = kb_end(buttons=loc.buttons)
 
     opts = LinkPreviewOptions(is_disabled=True)
     return text_message, keyboard, opts

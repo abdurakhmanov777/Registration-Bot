@@ -52,8 +52,8 @@ async def multi(
         value (str): Текущее значение состояния пользователя.
         tg_id (int): Telegram ID пользователя.
         data (Optional[str]): Дополнительные данные от пользователя.
-        data_select (Optional[List[str]]): Пара ключ–значение для сохранения
-            в хранилище данных.
+        data_select (Optional[List[str]]): Пара ключ–значение для
+            сохранения в хранилище данных.
         event (Optional[Union[types.CallbackQuery, types.Message]]):
             Telegram событие (сообщение или callback).
 
@@ -62,12 +62,14 @@ async def multi(
             Текст сообщения, клавиатура и параметры предпросмотра ссылок.
     """
     # Пытаемся получить обработчик для специальных состояний
-    handler: Optional[Callable[[MultiContext], Any]
-                      ] = SPECIAL_HANDLERS.get(value)
+    handler: Optional[
+        Callable[[MultiContext], Any]
+    ] = SPECIAL_HANDLERS.get(value)
+
     loc_state: Optional[Any] = None
 
     if handler is None:
-        loc_state = getattr(loc, value, None)
+        loc_state = getattr(loc.steps, value, None)
         # Если состояние не найдено, используем стартовый обработчик
         handler = HANDLERS.get(
             loc_state.type,
