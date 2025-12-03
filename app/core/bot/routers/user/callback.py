@@ -6,14 +6,13 @@
 и отмены регистрации.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 
 from app.core.bot.routers.filters import CallbackNextFilter, ChatTypeFilter
 from app.core.bot.services.keyboards.user import kb_cancel_confirm
-from app.core.bot.services.localization import Localization
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import handle_send, multi
 from app.core.bot.services.requests.data import manage_data_clear
