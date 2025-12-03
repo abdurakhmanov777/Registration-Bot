@@ -7,7 +7,8 @@
 """
 
 import re
-from typing import Any, Dict, Optional, Tuple
+from datetime import date, datetime
+from typing import Any, Dict, Optional, Tuple, Union
 
 from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions
 
@@ -39,28 +40,46 @@ async def handle_input(
     loc: Any = ctx.loc
     loc_state: Any = ctx.loc_state
     tg_id: int = ctx.tg_id
-    user_input: Optional[str] = ctx.data
+    user_input: Optional[Union[str, datetime]] = ctx.data
 
-    format_: str = loc_state.format
-    pattern: str = loc_state.pattern
+    format_: str = loc_state.data.format
+    pattern: str = loc_state.data.pattern
     base_text: str = loc_state.text
+    value_type: str = loc_state.data.type
     template: Any = loc.messages.template.input
 
     error_occurred: bool = False
-    show_next: bool = loc_state.required
+    show_next: bool = loc_state.data.required
     part1: str
     part2: str
     part3: str
 
     # Проверяем пользовательский ввод через регулярное выражение
     if user_input is not None:
+        # if value_type.lower() == "datetime" and min_age is not None:
+        #     birth_date: datetime = cast_value
+        #     today: date = date.today()
+        #     age: int = today.year - birth_date.year - (
+        #         (today.month, today.day) < (birth_date.month,
+        #                                     birth_date.day)
+        #     )
+        #     if age < min_age:
+        #         # Возраст меньше минимально допустимого
+        #         logger.error(
+        #             f"Возраст {age} меньше минимально допустимого "
+        #             f"{min_age}"
+        #         )
+        #         return None
         if re.fullmatch(pattern, user_input):
-            await manage_data(
+            result: str | None = await manage_data(
                 tg_id=tg_id,
                 action="create_or_update",
                 key=base_text,
                 value=user_input,
+                value_type=value_type
             )
+            if result is None:
+                error_occurred = True
         else:
             error_occurred = True
     else:
@@ -78,7 +97,6 @@ async def handle_input(
         show_next = False
 
     elif not user_input:
-        # Пустой ввод → склоняем текст для шаблона
         part1, part2, part3 = template.empty
 
         processed_text: str = await inflect_text(
@@ -95,6 +113,9 @@ async def handle_input(
         show_next = False
 
     else:
+        # if value_type == "date":
+        #     print(111)
+        #     print(type(user_input), user_input.strftime("%d.%m.%Y")) # type: ignore
         # Поле заполнено корректно
         part1, part2, part3 = template.filled
         text_message = (

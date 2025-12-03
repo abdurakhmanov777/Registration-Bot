@@ -6,7 +6,7 @@
 по Telegram ID пользователя.
 """
 
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 from app.core.database.engine import async_session
 from app.core.database.managers import DataManager
@@ -18,7 +18,8 @@ async def manage_data(
     action: Literal["get", "create_or_update", "delete"],
     key: str,
     value: Optional[str] = None,
-) -> Optional[str]:
+    value_type: Optional[str] = None
+) -> Optional[Union[str, None]]:
     """Выполняет CRUD-операции с пользовательскими данными.
 
     Оборачивает методы DataManager для работы с таблицей Data.
@@ -27,16 +28,19 @@ async def manage_data(
 
     Args:
         tg_id (int): Telegram ID пользователя.
-        action (Literal["get", "create_or_update", "delete"]): Действие:
+        action (Literal["get", "create_or_update", "delete"]):
+            Действие:
             - "get": получить запись по ключу;
-            - "create_or_update": создать новую запись или обновить существующую;
+            - "create_or_update": создать новую запись или обновить
+              существующую;
             - "delete": удалить запись.
         key (str): Ключ данных.
         value (Optional[str]): Значение данных для create_or_update.
+        value_type (Optional[str]): Тип значения для create_or_update.
 
     Returns:
-        Optional[str]: Строковое значение данных, "True"/"False" для delete
-        или None, если запись не найдена.
+        Optional[Union[str, None]]: Строковое значение данных, "True"/"False"
+        для delete или None, если запись не найдена.
 
     Raises:
         ValueError: Если action неизвестен или value не передан для
@@ -49,17 +53,17 @@ async def manage_data(
             data: Optional[Data] = await data_manager.get(tg_id, key)
             return data.value if data else None
 
-        if action == "create_or_update":
+        elif action == "create_or_update":
             if value is None:
                 raise ValueError(
                     "Для create_or_update необходимо передать значение value."
                 )
             data: Optional[Data] = await data_manager.create_or_update(
-                tg_id, key, value
+                tg_id, key, value, value_type
             )
             return data.value if data else None
 
-        if action == "delete":
+        elif action == "delete":
             result: bool = await data_manager.delete(tg_id, key)
             return str(result)
 
