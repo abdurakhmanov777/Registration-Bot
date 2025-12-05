@@ -15,7 +15,7 @@ from app.core.bot.services.keyboards.user import kb_start
 from app.core.bot.services.multi.context import MultiContext
 
 
-async def handle_start(
+async def handler_start(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """

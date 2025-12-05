@@ -15,7 +15,7 @@ from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards import kb_delete
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
-from app.core.bot.services.multi.handlers.send import handle_send
+from app.core.bot.services.multi.handlers.success import handler_success
 from app.core.bot.services.requests.user import manage_user, manage_user_state
 from app.core.database.models.user import User
 
@@ -34,7 +34,7 @@ async def cmd_start(
 
     Получает текст и клавиатуру из локализации по ключу команды
     и отправляет сообщение с динамической клавиатурой или вызывает
-    handle_send при специальном состоянии.
+    handler_success при специальном состоянии.
 
     Args:
         message (types.Message): Входящее сообщение Telegram.
@@ -81,7 +81,7 @@ async def cmd_start(
             link_preview_options=link_opts
         )
     else:
-        await handle_send(
+        await handler_success(
             loc=loc,
             tg_id=message.from_user.id,
             event=message

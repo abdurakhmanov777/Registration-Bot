@@ -42,7 +42,7 @@ def kb_submit(
         и "Назад".
     """
     rows: List[List[Tuple[str, str]]] = [
-        [(buttons.back, "userback"), (buttons.send, "sending_data")]
+        [(buttons.back, "userback"), (buttons.success, "success_data")]
     ]
     return build_keyboard(rows)
 
@@ -178,7 +178,7 @@ def kb_cancel_confirm(
     return build_keyboard(rows)
 
 
-def kb_send(
+def kb_success(
     buttons: Any
 ) -> types.InlineKeyboardMarkup:
     """Создаёт клавиатуру с кнопкой 'Закрыть окно'.

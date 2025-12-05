@@ -1,7 +1,7 @@
 """
 Модуль обработки состояния выбора пользователя.
 
-Предоставляет функцию `handle_select`, формирующую сообщение и клавиатуру
+Предоставляет функцию `handler_select`, формирующую сообщение и клавиатуру
 для выбора пользователя на основе текущей локализации.
 """
 
@@ -14,7 +14,7 @@ from app.core.bot.services.multi.context import MultiContext
 from app.core.bot.services.requests.data.crud import manage_data
 
 
-async def handle_select(
+async def handler_select(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """

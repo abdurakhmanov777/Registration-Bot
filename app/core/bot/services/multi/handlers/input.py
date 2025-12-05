@@ -1,7 +1,7 @@
 """
 Модуль обработки состояния ввода пользователя.
 
-Предоставляет функцию `handle_input`, которая валидирует введённые данные,
+Предоставляет функцию `handler_input`, которая валидирует введённые данные,
 загружает или сохраняет их при необходимости и формирует итоговое сообщение
 и клавиатуру для следующего шага.
 """
@@ -19,7 +19,7 @@ from app.core.bot.utils.morphology.casing import lower_words
 from app.core.bot.utils.morphology.inflection import inflect_text
 
 
-async def handle_input(
+async def handler_input(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """

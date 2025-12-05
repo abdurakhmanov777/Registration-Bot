@@ -14,12 +14,12 @@ from aiogram.enums import ChatAction
 
 from app.core.bot.services.generator import generate_image
 from app.core.bot.services.generator.generator_code import generate_code
-from app.core.bot.services.keyboards.user import kb_send
+from app.core.bot.services.keyboards.user import kb_success
 from app.core.bot.services.requests.user import manage_user
 from app.core.database.models.user import User
 
 
-async def handle_send(
+async def handler_success(
     loc: Any,
     tg_id: int,
     event: Optional[
@@ -88,7 +88,7 @@ async def handle_send(
         image_buffer: BytesIO = await generate_image(str(code))
 
         # Формирование подписи
-        template: Any = loc.messages.template.send
+        template: Any = loc.messages.template.success
         info: Any = loc.event
 
         part1: str
@@ -130,7 +130,7 @@ async def handle_send(
             ),
             caption=caption,
             parse_mode="HTML",
-            reply_markup=kb_send(loc.buttons),
+            reply_markup=kb_success(loc.buttons),
         )
 
         # Закрепление сообщения

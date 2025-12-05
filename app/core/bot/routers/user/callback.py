@@ -15,7 +15,7 @@ from aiogram.fsm.context import FSMContext
 from app.core.bot.routers.filters import CallbackNextFilter, ChatTypeFilter
 from app.core.bot.services.keyboards.user import kb_cancel_confirm
 from app.core.bot.services.logger import log
-from app.core.bot.services.multi import handle_send, multi
+from app.core.bot.services.multi import handler_success, multi
 from app.core.bot.services.requests.data import manage_data_clear
 from app.core.bot.services.requests.user import manage_user, manage_user_state
 from app.core.database.models import User
@@ -98,9 +98,9 @@ async def clbk_next(
 
 @user_callback.callback_query(
     ChatTypeFilter(chat_type=["private"]),
-    F.data == "sending_data"
+    F.data == "success_data"
 )
-async def clbk_send(
+async def clbk_success(
     callback: types.CallbackQuery,
     state: FSMContext
 ) -> None:
@@ -119,7 +119,7 @@ async def clbk_send(
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
 
-    msg_id: int | None = await handle_send(
+    msg_id: int | None = await handler_success(
         loc=loc,
         tg_id=callback.from_user.id,
         event=callback

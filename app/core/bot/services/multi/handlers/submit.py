@@ -1,7 +1,7 @@
 """
 Модуль обработки финального состояния пользователя.
 
-Предоставляет функцию `handle_submit`, которая формирует итоговое сообщение
+Предоставляет функцию `handler_submit`, которая формирует итоговое сообщение
 пользователю на основе сохранённых данных, шаблонов локализации и
 клавиатуры завершения.
 """
@@ -16,7 +16,7 @@ from app.core.bot.services.requests.data import manage_data_list
 from app.core.bot.services.requests.user import manage_user_state
 
 
-async def handle_submit(
+async def handler_submit(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """
@@ -67,12 +67,16 @@ async def handle_submit(
     )
 
     # Получаем шаблоны начала и окончания сообщения
-    start_template, end_template = loc.messages.template.submit
+    part1: str
+    part2: str
+    part1, part2 = loc.messages.template.submit
 
-    text_message: str = f"{start_template}{items_text}{end_template}"
+    text_message: str = f"{part1}{items_text}{part2}"
 
     # Создаём финальную клавиатуру
-    keyboard: InlineKeyboardMarkup = kb_submit(buttons=loc.buttons)
+    keyboard: InlineKeyboardMarkup = kb_submit(
+        buttons=loc.buttons
+    )
 
     opts: LinkPreviewOptions = LinkPreviewOptions(is_disabled=True)
 

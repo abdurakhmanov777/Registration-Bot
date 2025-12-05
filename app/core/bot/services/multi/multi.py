@@ -14,23 +14,23 @@ from aiogram import types
 from app.core.bot.services.requests.data import manage_data
 
 from .context import MultiContext
-from .handlers.input import handle_input
-from .handlers.select import handle_select
-from .handlers.start import handle_start
-from .handlers.submit import handle_submit
-from .handlers.text import handle_text
+from .handlers.input import handler_input
+from .handlers.select import handler_select
+from .handlers.start import handler_start
+from .handlers.submit import handler_submit
+from .handlers.text import handler_text
 
 # Таблица стандартных обработчиков.
 HANDLERS: Dict[str, Callable[[MultiContext], Any]] = {
-    "input": handle_input,
-    "select": handle_select,
-    "text": handle_text,
+    "input": handler_input,
+    "select": handler_select,
+    "text": handler_text,
 }
 
 # Таблица обработчиков для специальных состояний.
 SPECIAL_HANDLERS: Dict[str, Callable[[MultiContext], Any]] = {
-    "1": handle_start,
-    "98": handle_submit,
+    "1": handler_start,
+    "98": handler_submit,
 }
 
 
@@ -87,9 +87,9 @@ async def multi(
         # Если состояние локализации не найдено, используем стартовый
         # обработчик, чтобы избежать зависания пользователя.
         handler = (
-            HANDLERS.get(loc_state.type, handle_start)
+            HANDLERS.get(loc_state.type, handler_start)
             if loc_state
-            else handle_start
+            else handler_start
         )
 
     context = MultiContext(
