@@ -75,6 +75,7 @@ async def handler_submit(
 
     # Создаём финальную клавиатуру
     keyboard: InlineKeyboardMarkup = kb_submit(
+        payment=loc.event.payment,
         buttons=loc.buttons
     )
 

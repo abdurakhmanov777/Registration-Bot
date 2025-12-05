@@ -98,7 +98,7 @@ async def clbk_next(
 
 @user_callback.callback_query(
     ChatTypeFilter(chat_type=["private"]),
-    F.data == "success_data"
+    F.data == "success"
 )
 async def clbk_success(
     callback: types.CallbackQuery,
