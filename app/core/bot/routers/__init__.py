@@ -1,10 +1,11 @@
-from app.core.bot.routers.admin.callback import router as admin_callback
-from app.core.bot.routers.admin.command import router as admin_command
-from app.core.bot.routers.admin.message import router as admin_message
-from app.core.bot.routers.intercept.intercept import intercept_handler
-from app.core.bot.routers.user.callback import user_callback
-from app.core.bot.routers.user.command import user_command
-from app.core.bot.routers.user.message import user_message
+from .admin.callback import router as admin_callback
+from .admin.command import router as admin_command
+from .admin.message import router as admin_message
+from .intercept.intercept import intercept_handler
+from .user.callback import user_callback
+from .user.command import user_command
+from .user.message import user_message
+from .user.payment import user_payment
 
 __all__: list[str] = [
     "admin_callback",
@@ -14,4 +15,5 @@ __all__: list[str] = [
     "user_callback",
     "user_command",
     "user_message",
+    "user_payment",
 ]

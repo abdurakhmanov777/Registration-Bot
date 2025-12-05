@@ -196,3 +196,20 @@ def kb_success(
         [(buttons.cancel_reg, "cancel_reg")]
     ]
     return build_keyboard(rows)
+
+
+def kb_payment(
+    buttons: Any
+) -> types.InlineKeyboardMarkup:
+    """Создаёт клавиатуру с кнопкой 'Закрыть окно'.
+
+    Args:
+        buttons (Any): Объект с локализованными текстами кнопок.
+
+    Returns:
+        types.InlineKeyboardMarkup: Клавиатура с кнопкой отмены.
+    """
+    rows: List[List[Tuple[str, str]]] = [
+        [(buttons.cancel_reg, "cancel_reg")]
+    ]
+    return build_keyboard(rows)

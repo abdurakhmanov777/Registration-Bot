@@ -40,5 +40,5 @@ class CallbackNextFilter(BaseFilter):
 
         # split по "_" и убираем первый элемент 'user'
         user_values: list[str] = callback.data.split("_")[1:]
-
+        
         return {"value": user_values}

@@ -46,12 +46,14 @@ async def setup_dispatcher() -> Dispatcher:
     # Применяем middleware к каждому роутеру
     await _apply_middlewares({
         routers.admin_callback.callback_query: mw.MwAdminCallback(),
-        routers.admin_command.message: mw.MwAdminCommand(),
+        routers.admin_command.message: mw.MwAdminMessage(),
         routers.admin_message.message: mw.MwAdminMessage(),
         routers.intercept_handler.message: mw.MwSystemBlock(),
         routers.user_callback.callback_query: mw.MwUserCallback(),
-        routers.user_command.message: mw.MwUserCommand(),
+        routers.user_command.message: mw.MwUserMessage(),
         routers.user_message.message: mw.MwUserMessage(),
+        routers.user_payment.callback_query: mw.MwUserCallback(),
+        routers.user_payment.message: mw.MwUserMessage(),
     })
 
     # Подключаем все роутеры к диспетчеру
@@ -62,6 +64,7 @@ async def setup_dispatcher() -> Dispatcher:
         routers.intercept_handler,
         routers.user_callback,
         routers.user_command,
+        routers.user_payment,
         routers.user_message,
     )
 

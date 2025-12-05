@@ -2,16 +2,16 @@
 Алиасы для создания middleware.
 
 Доступные алиасы:
-    - MwAdminCallback для admin callback query
-    - MwAdminCommand для admin команд
+    - MwAdminCallback для admin callback_query
     - MwAdminMessage для admin сообщений
     - MwSystemBlock для системной блокировки
-    - MwUserCallback для пользовательских callback query
-    - MwUserCommand для пользовательских команд
+    - MwUserCallback для пользовательских callback_query
     - MwUserMessage для пользовательских сообщений
 """
 
 from typing import Any
+
+from aiogram.types import ContentType
 
 from .base import MwBase
 
@@ -30,25 +30,6 @@ def MwAdminCallback(
     """
     return MwBase(
         delete_event=False,
-        role="admin",
-        **extra_data,
-    )
-
-
-def MwAdminCommand(
-    **extra_data: Any,
-) -> MwBase:
-    """
-    Middleware для команд админов с админской локализацией.
-
-    Args:
-        **extra_data: Дополнительные параметры для MwBase.
-
-    Returns:
-        MwBase: Экземпляр middleware для админской команды.
-    """
-    return MwBase(
-        delete_event=True,
         role="admin",
         **extra_data,
     )
@@ -93,9 +74,7 @@ def MwSystemBlock(
     )
 
 
-def MwUserCallback(
-    **extra_data: Any,
-) -> MwBase:
+def MwUserCallback() -> MwBase:
     """
     Middleware для callback query обычных пользователей.
 
@@ -108,37 +87,12 @@ def MwUserCallback(
     return MwBase(
         delete_event=False,
         role="user",
-        **extra_data,
     )
 
 
-def MwUserCommand(
-    **extra_data: Any,
-) -> MwBase:
+def MwUserMessage() -> MwBase:
     """
-    Middleware для команд обычных пользователей.
-
-    Args:
-        **extra_data: Дополнительные параметры для MwBase.
-
-    Returns:
-        MwBase: Экземпляр middleware для пользовательской команды.
-    """
-    return MwBase(
-        delete_event=True,
-        role="user",
-        **extra_data,
-    )
-
-
-def MwUserMessage(
-    **extra_data: Any,
-) -> MwBase:
-    """
-    Middleware для сообщений обычных пользователей.
-
-    Args:
-        **extra_data: Дополнительные параметры для MwBase.
+    Middleware для сообщений пользователей.
 
     Returns:
         MwBase: Экземпляр middleware для пользовательского сообщения.
@@ -146,5 +100,21 @@ def MwUserMessage(
     return MwBase(
         delete_event=True,
         role="user",
-        **extra_data,
+    )
+
+
+def MwUserPayment() -> MwBase:
+    """
+    Middleware для оплаты.
+
+    Returns:
+        MwBase: Экземпляр middleware для пользовательского сообщения.
+    """
+    return MwBase(
+        delete_event=True,
+        role="user",
+        allowed_types={
+            ContentType.TEXT,               # обычные текстовые сообщения
+            ContentType.SUCCESSFUL_PAYMENT  # успешные платежи
+        }
     )

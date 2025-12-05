@@ -19,6 +19,12 @@ BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
 # URL для подключения к базе данных
 DB_URL: str = os.getenv("DB_URL", "")
 
+# Токен для оплаты
+PROVIDER_TOKEN: str = os.getenv("PROVIDER_TOKEN", "")
+
+# Токен для оплаты
+CURRENCY: str = os.getenv("CURRENCY", "")
+
 # Часовой пояс приложения (смещение от UTC)
 TIME_ZONE: int = int(os.getenv("TIME_ZONE", "0"))
 
