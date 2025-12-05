@@ -9,12 +9,18 @@
 from typing import Any, Dict
 
 from aiogram import Bot, F, Router, types
+from aiogram.enums import ContentType
 from aiogram.fsm.context import FSMContext
 
 from app.config.settings import CURRENCY, PROVIDER_TOKEN
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards.user import kb_payment
 from app.core.bot.services.logger import log
+from app.core.bot.services.multi import multi
+from app.core.bot.services.multi.handlers.success import handler_success
+from app.core.bot.services.requests.user.crud import manage_user
+from app.core.bot.services.requests.user.state import manage_user_state
+from app.core.database.models.user import User
 
 user_payment: Router = Router()
 
@@ -24,20 +30,45 @@ async def process_pre_checkout_query(
     pre_checkout_query: types.PreCheckoutQuery,
     bot: Bot
 ) -> None:
-    print(1111)
     await bot.answer_pre_checkout_query(
         pre_checkout_query.id,
         ok=True
     )
 
 
-@user_payment.message()
+@user_payment.message(F.successful_payment)
 async def aaa(
-    message: types.Message
+    message: types.Message,
+    state: FSMContext,
 ) -> None:
+    user_data: Dict[str, Any] = await state.get_data()
+    loc: Any = user_data.get("loc_user")
+    if not loc or not message.from_user:
+        return
 
-    await message.answer("Платёж успешно выполнен!")
+    user_state: bool | str | list[str] | None = await manage_user_state(
+        message.from_user.id,
+        "peek"
+    )
 
+    db_user: User | bool | None | int = await manage_user(
+        tg_id=message.from_user.id,
+        action="get"
+    )
+
+    if not isinstance(db_user, User) or not isinstance(user_state, str):
+        return
+
+    # msg_id: User | bool | None | int = await manage_user(
+    #     tg_id=message.from_user.id,
+    #     action="msg_update",
+    #     msg_id=message.message_id + 1
+    # )
+    await handler_success(
+        loc=loc,
+        tg_id=message.from_user.id,
+        event=message
+    )
 
 @user_payment.callback_query(
     ChatTypeFilter(chat_type=["private"]),
@@ -59,17 +90,18 @@ async def clbk_payment(
     prices: list[types.LabeledPrice] = [
         types.LabeledPrice(
             label="Оплата",
-            amount=100 * 100
+            amount=loc.event.payment.price * 100
         )
     ]
     await callback.message.bot.send_invoice(
         chat_id=callback.from_user.id,
         title=loc.event.name,
-        description="Оплати участие",
+        description="Оплата участия",
         payload="order",
         provider_token=PROVIDER_TOKEN,
         currency=CURRENCY,
         prices=prices,
     )
 
+    await callback.message.delete()
     await log(callback)

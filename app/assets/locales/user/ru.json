@@ -5,7 +5,10 @@
         "link": "https://yandex.ru/profile/95499232862?lang=ru",
         "date": "2025-12-04",
         "time": "20:00:00",
-        "payment": true
+        "payment": {
+            "enabled": true,
+            "price": 700
+        }
     },
     "steps": {
         "2": {

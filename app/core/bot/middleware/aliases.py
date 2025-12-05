@@ -114,7 +114,6 @@ def MwUserPayment() -> MwBase:
         delete_event=True,
         role="user",
         allowed_types={
-            ContentType.TEXT,               # обычные текстовые сообщения
             ContentType.SUCCESSFUL_PAYMENT  # успешные платежи
         }
     )

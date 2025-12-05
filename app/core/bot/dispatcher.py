@@ -53,7 +53,7 @@ async def setup_dispatcher() -> Dispatcher:
         routers.user_command.message: mw.MwUserMessage(),
         routers.user_message.message: mw.MwUserMessage(),
         routers.user_payment.callback_query: mw.MwUserCallback(),
-        routers.user_payment.message: mw.MwUserMessage(),
+        routers.user_payment.message: mw.MwUserPayment(),
     })
 
     # Подключаем все роутеры к диспетчеру
