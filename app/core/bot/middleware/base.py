@@ -10,7 +10,10 @@
     - динамическое управление разрешёнными типами.
 """
 
-from typing import Any, Awaitable, Callable, Literal, Optional, Set, Union
+import time
+from functools import wraps
+from typing import (Any, Awaitable, Callable, Coroutine, Literal, Optional,
+                    Set, Union)
 
 from aiogram import BaseMiddleware, Bot
 from aiogram.types import CallbackQuery, ContentType, Message
@@ -97,7 +100,7 @@ class MwBase(BaseMiddleware):
         # Загружаем локализацию в зависимости от роли
         await refresh_fsm_data(data, event, role=self.role)
 
-        await delete_stored_message(event=event)
+        await delete_stored_message(event)
         try:
             # Вызываем хэндлер
             result: Any = await handler(event, data)
@@ -112,6 +115,22 @@ class MwBase(BaseMiddleware):
         except Exception as e:
             # Логируем ошибки
             await log_error(event, error=e)
+
+
+async def measure_time(coro: Coroutine[Any, Any, Any]) -> Any:
+    """
+    Измеряет время выполнения уже созданного coroutine.
+
+    Usage:
+        await measure_time(delete_stored_message(event))
+    """
+    start = time.perf_counter()
+    result = await coro
+    end = time.perf_counter()
+    print(f"{coro.__name__ if hasattr(
+        coro, '__name__'
+    ) else 'coroutine'} заняла {end - start:.4f} секунд")
+    return result
 
 
 async def delete_stored_message(

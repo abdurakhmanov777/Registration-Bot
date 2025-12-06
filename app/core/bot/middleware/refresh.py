@@ -34,7 +34,6 @@ async def refresh_fsm_data(
             tg_id: Optional[int] = getattr(event.from_user, "id", None)
             if tg_id:
                 async with async_session() as session:
-                    print(2222)
                     user_manager: UserManager = UserManager(session)
                     user_db = await user_manager.get(tg_id)
 

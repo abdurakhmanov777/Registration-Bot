@@ -176,7 +176,7 @@ def kb_payment(
         types.InlineKeyboardMarkup: Клавиатура с кнопкой отмены.
     """
     rows: List[List[Tuple[str, str]]] = [
-        [(buttons.back, "userback"), (buttons.next, "payment")]
+        [(buttons.back, "userback"), (buttons.payment, "payment")]
         # [(buttons.cancel_reg, "cancel_reg")]
     ]
     return build_keyboard(rows)
