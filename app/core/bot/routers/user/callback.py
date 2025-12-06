@@ -76,7 +76,8 @@ async def clbk_next(
         loc=loc,
         value=value[0],
         tg_id=callback.from_user.id,
-        data_select=data_select
+        data_select=data_select,
+        event=callback
     )
 
     try:
@@ -90,7 +91,7 @@ async def clbk_next(
             "push",
             value[0]
         )
-    except BaseException:
+    except:
         pass
 
     await log(callback)
@@ -143,7 +144,7 @@ async def clbk_success(
             "push",
             "100"
         )
-    except BaseException:
+    except:
         pass
 
     await log(callback)
@@ -197,7 +198,7 @@ async def clbk_back(
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-    except BaseException:
+    except:
         pass
 
     await log(callback)
@@ -285,7 +286,7 @@ async def clbk_cancel_confirm(
                 callback.message.chat.id,
                 msg_id
             )
-        except BaseException:
+        except:
             pass
 
     await log(callback)

@@ -14,7 +14,7 @@ from aiogram.fsm.context import FSMContext
 
 from app.config.settings import CURRENCY, PROVIDER_TOKEN
 from app.core.bot.routers.filters import ChatTypeFilter
-from app.core.bot.services.keyboards.user import kb_payment
+from app.core.bot.services.keyboards.user import kb_payment_1
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.success import handler_success
@@ -59,15 +59,27 @@ async def aaa(
     if not isinstance(db_user, User) or not isinstance(user_state, str):
         return
 
-    # msg_id: User | bool | None | int = await manage_user(
-    #     tg_id=message.from_user.id,
-    #     action="msg_update",
-    #     msg_id=message.message_id + 1
-    # )
+    msg_id: User | bool | None | int = await manage_user(
+        tg_id=message.from_user.id,
+        action="msg_update",
+        msg_id=message.message_id + 1
+    )
+
     await handler_success(
         loc=loc,
         tg_id=message.from_user.id,
         event=message
+    )
+    if isinstance(msg_id, int) and msg_id != 0 and message.bot:
+        try:
+            await message.bot.delete_message(message.chat.id, msg_id)
+        except:
+            pass
+
+    await manage_user_state(
+        message.from_user.id,
+        "push",
+        "100"
     )
 
 @user_payment.callback_query(
@@ -86,22 +98,25 @@ async def clbk_payment(
     ) or not callback.message.bot:
         return
 
-    await callback.answer()
-    prices: list[types.LabeledPrice] = [
-        types.LabeledPrice(
-            label="Оплата",
-            amount=loc.event.payment.price * 100
-        )
-    ]
-    await callback.message.bot.send_invoice(
-        chat_id=callback.from_user.id,
-        title=loc.event.name,
-        description="Оплата участия",
-        payload="order",
-        provider_token=PROVIDER_TOKEN,
-        currency=CURRENCY,
-        prices=prices,
-    )
 
-    await callback.message.delete()
+    await callback.message.edit_text(
+        text=loc.messages.payment,
+        reply_markup=kb_payment_1(loc.buttons)
+    )
+    # prices: list[types.LabeledPrice] = [
+    #     types.LabeledPrice(
+    #         label="Оплата",
+    #         amount=loc.event.payment.price * 100
+    #     )
+    # ]
+    # await callback.message.bot.send_invoice(
+    #     chat_id=callback.from_user.id,
+    #     title=loc.event.name,
+    #     description="Оплата участия",
+    #     payload="order",
+    #     provider_token=PROVIDER_TOKEN,
+    #     currency=CURRENCY,
+    #     prices=prices,
+    # )
+
     await log(callback)

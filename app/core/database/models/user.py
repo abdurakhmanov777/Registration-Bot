@@ -48,6 +48,10 @@ class User(Base):
         Integer,
         nullable=False
     )
+    msg_payment_id: Mapped[int] = mapped_column(
+        Integer,
+        nullable=True
+    )
     date_registration: Mapped[Optional[datetime]] = mapped_column(
         DateTime
     )

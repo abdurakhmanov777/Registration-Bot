@@ -15,11 +15,15 @@ from app.core.database.models import User
 async def manage_user(
     tg_id: int,
     action: Literal[
-        "get", "msg_update", "get_or_create", "create", "update", "delete"
+        "get",
+        "msg_update",
+        "msg_payment_update",
+        "get_or_create",
+        "create",
+        "update",
+        "delete"
     ] = "get",
     lang: str = "ru",
-    msg_id: int = 0,
-    state: Optional[str] = None,
     **fields: Any,
 ) -> Union[User, bool, None, int]:
     """
@@ -63,33 +67,33 @@ async def manage_user(
             return await manager.get_or_create(
                 tg_id,
                 lang=lang,
-                msg_id=msg_id,
+                msg_id=fields.get("msg_id", 0),
             )
         elif action == "msg_update":
             return await manager.msg_update(
                 tg_id,
-                msg_id=msg_id,
+                msg_id=fields.get("msg_id", 0),
+            )
+        elif action == "msg_payment_update":
+            print(1)
+            return await manager.msg_payment_update(
+                tg_id,
+                msg_id=fields.get("msg_payment_id", 0),
             )
         elif action == "create":
             return await manager.create(
                 tg_id=tg_id,
                 lang=lang,
-                msg_id=msg_id,
+                msg_id=fields.get("msg_id", 0),
             )
 
         elif action == "update":
-            update_fields = {
-                "lang": lang,
-                "msg_id": msg_id,
-                "state": state,
-            }
-            # Добавляем дополнительные поля из kwargs
-            update_fields.update(fields)
-            # Исключаем поля с None, чтобы не перезаписывать их пустыми
-            # значениями
+            # Обновляем все переданные поля через fields, исключая None
             update_fields: dict[str, Any] = {
-                k: v for k, v in update_fields.items() if v is not None
+                k: v for k, v in fields.items() if v is not None
             }
+            if not update_fields:
+                raise ValueError("Нет полей для обновления")
             return await manager.update(tg_id, **update_fields)
 
         elif action == "delete":
