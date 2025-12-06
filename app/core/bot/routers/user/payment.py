@@ -45,20 +45,7 @@ async def aaa(
     if not loc or not message.from_user:
         return
     # await message.edit_text()
-    msg_payment_id: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="msg_payment_update",
-        msg_id=0
-    )
-    if message.bot and isinstance(msg_payment_id, int):
-        try:
-            await message.bot.delete_message(
-                message.chat.id,
-                msg_payment_id
-            )
-        except:
-            pass
-
+    
 @user_payment.callback_query(
     ChatTypeFilter(chat_type=["private"]),
     F.data == "payment"

@@ -5,20 +5,13 @@
         "date": "2025-12-04",
         "time": "20:00:00",
         "payment": {
-            "status": false,
+            "status": true,
             "price": 700
         }
     },
     "steps": {
         "2": {
-            "id": "3",
-            "type": "text",
-            "text": "<b>Всем привет</b>\n\n<i>Это я, Далгат</i>",
-            "next": "3",
-            "link_preview": true
-        },
-        "3": {
-            "id": "3",
+            "id": "2",
             "type": "input",
             "data": {
                 "required": true,
@@ -28,10 +21,10 @@
                 "format": "Иванов Иван Иванович"
             },
             "text": "ФИО",
-            "next": "4"
+            "next": "3"
         },
-        "4": {
-            "id": "4",
+        "3": {
+            "id": "3",
             "type": "input",
             "data": {
                 "required": true,
@@ -40,21 +33,21 @@
                 "format": "09.09.2003"
             },
             "text": "Дата рождения",
-            "next": "5"
+            "next": "4"
         },
-        "5": {
-            "id": "5",
+        "4": {
+            "id": "4",
             "type": "select",
             "text": "ВУЗ",
             "options": [
                 {
                     "text": "МГТУ им. Н.Э. Баумана",
-                    "next": "6",
+                    "next": "5",
                     "save": true
                 },
                 {
                     "text": "Ввести ВУЗ",
-                    "next": "7",
+                    "next": "6",
                     "save": false
                 },
                 {
@@ -64,8 +57,8 @@
                 }
             ]
         },
-        "6": {
-            "id": "6",
+        "5": {
+            "id": "5",
             "type": "input",
             "data": {
                 "required": true,
@@ -76,8 +69,8 @@
             "text": "Группа",
             "next": "98"
         },
-        "7": {
-            "id": "7",
+        "6": {
+            "id": "6",
             "type": "input",
             "data": {
                 "required": true,

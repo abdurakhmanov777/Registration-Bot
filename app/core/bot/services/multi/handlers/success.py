@@ -143,33 +143,33 @@ async def handler_success(
     except:
         pass
 
-    if loc.event.payment.status:
-        prices: list[types.LabeledPrice] = [
-            types.LabeledPrice(
-                label="Оплата",
-                amount=loc.event.payment.price * 100
-            )
-        ]
+    # if loc.event.payment.status:
+    #     prices: list[types.LabeledPrice] = [
+    #         types.LabeledPrice(
+    #             label="Оплата",
+    #             amount=loc.event.payment.price * 100
+    #         )
+    #     ]
 
-        bot: Bot | None = None
-        if isinstance(event, types.Message):
-            bot: Bot | None = event.bot
-        elif isinstance(event, types.CallbackQuery) and event.message is not None:
-            bot = event.message.bot
-        if bot:
-            msg: types.Message = await bot.send_invoice(
-                chat_id=tg_id,
-                title=loc.event.name,
-                description="Оплата участия",
-                payload="order",
-                provider_token=PROVIDER_TOKEN,
-                currency=CURRENCY,
-                prices=prices,
-            )
-            await manage_user(
-                tg_id=tg_id,
-                action="update",
-                msg_payment_id=msg.message_id
-            )
+    #     bot: Bot | None = None
+    #     if isinstance(event, types.Message):
+    #         bot: Bot | None = event.bot
+    #     elif isinstance(event, types.CallbackQuery) and event.message is not None:
+    #         bot = event.message.bot
+    #     if bot:
+    #         msg: types.Message = await bot.send_invoice(
+    #             chat_id=tg_id,
+    #             title=loc.event.name,
+    #             description="Оплата участия",
+    #             payload="order",
+    #             provider_token=PROVIDER_TOKEN,
+    #             currency=CURRENCY,
+    #             prices=prices,
+    #         )
+    #         await manage_user(
+    #             tg_id=tg_id,
+    #             action="update",
+    #             msg_payment_id=msg.message_id
+    #         )
 
     return sent_message.message_id

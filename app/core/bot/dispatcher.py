@@ -6,7 +6,7 @@
 from typing import Any, Dict
 
 from aiogram import Dispatcher
-from aiogram.fsm.storage.memory import SimpleEventIsolation
+from aiogram.fsm.storage.memory import MemoryStorage, SimpleEventIsolation
 
 from app.core.bot import routers
 from app.core.bot.middleware import mw
@@ -41,7 +41,11 @@ async def setup_dispatcher() -> Dispatcher:
         и middleware.
     """
     # Создаем диспетчер с изоляцией событий в памяти
-    dp: Dispatcher = Dispatcher(events_isolation=SimpleEventIsolation())
+    storage = MemoryStorage()
+    dp: Dispatcher = Dispatcher(
+        storage=storage,
+        events_isolation=SimpleEventIsolation()
+    )
 
     # Применяем middleware к каждому роутеру
     await _apply_middlewares({

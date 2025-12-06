@@ -12,6 +12,13 @@
     "steps": {
         "2": {
             "id": "2",
+            "type": "text",
+            "text": "<b>Всем привет</b>\n\n<i>Это я, Далгат</i>",
+            "next": "3",
+            "link_preview": true
+        },
+        "3": {
+            "id": "3",
             "type": "input",
             "data": {
                 "required": true,
@@ -21,10 +28,10 @@
                 "format": "Иванов Иван Иванович"
             },
             "text": "ФИО",
-            "next": "3"
+            "next": "4"
         },
-        "3": {
-            "id": "3",
+        "4": {
+            "id": "4",
             "type": "input",
             "data": {
                 "required": true,
@@ -33,21 +40,21 @@
                 "format": "09.09.2003"
             },
             "text": "Дата рождения",
-            "next": "4"
+            "next": "5"
         },
-        "4": {
-            "id": "4",
+        "5": {
+            "id": "5",
             "type": "select",
             "text": "ВУЗ",
             "options": [
                 {
                     "text": "МГТУ им. Н.Э. Баумана",
-                    "next": "5",
+                    "next": "6",
                     "save": true
                 },
                 {
                     "text": "Ввести ВУЗ",
-                    "next": "6",
+                    "next": "7",
                     "save": false
                 },
                 {
@@ -57,8 +64,8 @@
                 }
             ]
         },
-        "5": {
-            "id": "5",
+        "6": {
+            "id": "6",
             "type": "input",
             "data": {
                 "required": true,
@@ -69,8 +76,8 @@
             "text": "Группа",
             "next": "98"
         },
-        "6": {
-            "id": "6",
+        "7": {
+            "id": "7",
             "type": "input",
             "data": {
                 "required": true,

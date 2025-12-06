@@ -1,10 +1,3 @@
-"""
-Модуль для обновления данных FSM пользователя или администратора.
-
-Обеспечивает асинхронную загрузку локализации и обновление данных
-в состоянии хэндлера.
-"""
-
 from typing import Any, Dict, Literal, Optional
 
 from app.core.bot.services.localization import Localization, load_localization
@@ -19,61 +12,45 @@ async def refresh_fsm_data(
     role: Literal["user", "admin"] = "user",
 ) -> None:
     """
-    Обновляет данные FSM, включая локализацию для пользователя или
-    администратора.
+    Обновляет данные FSM, включая:
+      - локализацию для пользователя или администратора,
+      - сохранение объекта user_db (из БД) в FSM.
 
     Локализация загружается только если её ещё нет в состоянии FSM.
-    Для пользователей язык определяется из базы данных, для админов
-    используется язык по умолчанию.
-
-    Args:
-        data (Dict[str, Any]): Словарь данных хэндлера FSM.
-        event (Optional[Any]): Событие от Telegram.
-        role (Literal["user", "admin"]): Роль пользователя для загрузки
-            локализации.
+    Для пользователей язык определяется из базы данных, для админов — язык по умолчанию.
     """
+    user_db: Optional[User] = None  # Инициализация заранее
     state: Any = data.get("state")
     if not state:
         return
 
-    key: str = f"loc_{role}"
+    loc_key: str = f"loc_{role}"
+    user_key: str = "user"
 
-    # Проверяем наличие локализации в состоянии, чтобы избежать повторной
-    # загрузки
-    user_data: Dict[str, Any] = await state.get_data()
-    if key in user_data:
-        return
-
-    async def _get_language() -> str:
-        """
-        Определяет язык пользователя или возвращает язык по умолчанию.
-
-        Returns:
-            str: Язык пользователя.
-        """
-        if role == "admin":
-            return "ru"
-
-        lang: str = "ru"
-        if event:
+    # Проверяем наличие локализации и user_db в FSM
+    fsm_data: Dict[str, Any] = await state.get_data()
+    if loc_key not in fsm_data or user_key not in fsm_data:
+        if role == "user" and event:
             tg_id: Optional[int] = getattr(event.from_user, "id", None)
             if tg_id:
                 async with async_session() as session:
+                    print(2222)
                     user_manager: UserManager = UserManager(session)
-                    user: Optional[User] = await user_manager.get(tg_id)
-                    if user:
-                        lang = user.lang
-        return lang
+                    user_db = await user_manager.get(tg_id)
 
-    # Определяем язык и загружаем локализацию
-    lang: str = await _get_language()
-    loc: Localization = await load_localization(
-        language=lang,
-        role=role
-    )
+        elif role == "admin":
+            # Для админов можно создать фиктивного user_db или None
+            user_db = None
 
-    # Обновляем данные FSM новым объектом локализации и языком
-    await state.update_data(**{
-        key: loc,
-        "lang": lang
-    })
+        # Сохраняем user_db в FSM
+        if user_db:
+            await state.update_data(**{user_key: user_db})
+
+    # --- Локализация ---
+    if loc_key not in fsm_data:
+        lang: str = "ru"
+        if role == "user" and user_db:
+            lang = getattr(user_db, "lang", "ru")
+
+        loc: Localization = await load_localization(language=lang, role=role)
+        await state.update_data(**{loc_key: loc, "lang": lang})

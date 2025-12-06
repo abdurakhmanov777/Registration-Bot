@@ -280,23 +280,13 @@ async def clbk_cancel_confirm(
         action="msg_update",
         msg_id=callback.message.message_id
     )
-    msg_payment_id: User | bool | None | int = await manage_user(
-        tg_id=callback.from_user.id,
-        action="msg_payment_update",
-        msg_id=0
-    )
     if (
         isinstance(msg_id, int) and msg_id != 0 and callback.message.bot
-        and isinstance(msg_payment_id, int)
     ):
         try:
             await callback.message.bot.delete_message(
                 callback.message.chat.id,
                 msg_id
-            )
-            await callback.message.bot.delete_message(
-                callback.message.chat.id,
-                msg_payment_id
             )
         except:
             pass

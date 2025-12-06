@@ -42,6 +42,7 @@ async def cmd_start(
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+
     if not loc or not message.from_user:
         return
 
@@ -63,11 +64,7 @@ async def cmd_start(
         action="msg_update",
         msg_id=message.message_id + 1
     )
-    msg_payment_id: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="msg_payment_update",
-        msg_id=0
-    )
+
     if user_state != "100":
         text_message: str
         keyboard_message: types.InlineKeyboardMarkup
@@ -94,11 +91,6 @@ async def cmd_start(
         if isinstance(msg_id, int) and msg_id != 0:
             try:
                 await message.bot.delete_message(message.chat.id, msg_id)
-            except BaseException:
-                pass
-        if isinstance(msg_payment_id, int) and msg_payment_id != 0:
-            try:
-                await message.bot.delete_message(message.chat.id, msg_payment_id)
             except BaseException:
                 pass
 
