@@ -131,7 +131,7 @@ async def handler_success(
             chat_id=chat_id,
             message_id=sent_message.message_id,
         )
-    except:
+    except Exception:
         pass
 
     return sent_message.message_id

@@ -1,22 +1,15 @@
 """
-Базовый middleware для Aiogram.
+Модуль содержит базовый middleware для обработки событий Aiogram.
 
-Поддерживает:
-    - подсчёт вызовов хэндлера,
-    - удаление события после обработки,
-    - передачу доп. параметров в data,
-    - проверку роли администратора,
-    - удаление сообщений с неподдерж. типами,
-    - динамическое управление разрешёнными типами.
+Middleware выполняет фильтрацию типов сообщений, подсчёт вызовов,
+удаление событий, проверку роли пользователя, обновление данных FSM и БД,
+а также удаление сообщений неподдерживаемых типов.
 """
 
-import time
-from typing import (Any, Awaitable, Callable, Coroutine, Dict, Literal,
-                    Optional, Set, Union)
+from typing import Any, Awaitable, Callable, Dict, Literal, Optional, Set
 
-from aiogram import BaseMiddleware, Bot
-from aiogram.types import CallbackQuery, ContentType, Message
-from aiogram.types.user import User as TgUser
+from aiogram import BaseMiddleware
+from aiogram.types import ContentType, Message
 
 from app.core.bot.services.logger import log_error
 from app.core.database import async_session
@@ -28,13 +21,22 @@ from .refresh import refresh_fsm_data
 
 class MwBase(BaseMiddleware):
     """
-    Базовый middleware для обработки событий.
+    Базовый middleware для обработки событий Aiogram.
 
-    Args:
-        delete_event (bool): Удалять событие после обработки.
-        role (Literal["user","admin"]): Роль для локализации.
-        allowed_types (Optional[Set[str]]): Разрешённые типы сообщений.
-        **extra_data: Доп. параметры для передачи в data.
+    Middleware поддерживает подсчёт вызовов обработчика, удаление события,
+    проверку роли пользователя, обновление локализации и данных FSM, а также
+    фильтрацию неподдерживаемых типов сообщений.
+
+    Parameters
+    ----------
+    delete_event : bool
+        Удалять ли событие после обработки.
+    role : Literal["user", "admin"]
+        Роль пользователя, необходимая для выполнения обработчика.
+    allowed_types : Optional[Set[str]]
+        Набор допустимых типов сообщений.
+    **extra_data : Any
+        Дополнительные параметры, передаваемые в data для обработчика.
     """
 
     def __init__(
@@ -47,115 +49,103 @@ class MwBase(BaseMiddleware):
         self.counter: int = 0
         self.delete_event: bool = delete_event
         self.role: Literal["user", "admin"] = role
-        self.extra_data: dict[str, Any] = extra_data
-        # Разрешённые типы сообщений
+        self.extra_data: Dict[str, Any] = extra_data
+
         self.allowed_types: Set[str] = {ContentType.TEXT}
         if allowed_types:
             self.allowed_types.update(allowed_types)
 
     async def __call__(
         self,
-        handler: Callable[[Any, dict[str, Any]], Awaitable[Any]],
+        handler: Callable[[Any, Dict[str, Any]], Awaitable[Any]],
         event: Optional[Any] = None,
-        data: Optional[dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
     ) -> Any:
         """
-        Основной метод middleware.
+        Основной метод вызова middleware.
 
-        Загружает локализацию, обновляет данные и проверяет роль.
-        Удаляет сообщения с неподдерживаемыми типами.
+        Проверяет корректность события, фильтрует по типу сообщения,
+        обновляет FSM данные, выполняет обработчик, затем обновляет БД
+        и при необходимости удаляет сообщение или событие.
 
-        Args:
-            handler (Callable[[Any, dict[str, Any]], Awaitable[Any]]):
-                Хэндлер для обработки события.
-            event (Optional[Any]): Событие Message или CallbackQuery.
-            data (Optional[dict[str, Any]]): Данные между middleware
-                и хэндлером.
+        Parameters
+        ----------
+        handler : Callable
+            Обработчик события.
+        event : Optional[Any]
+            Обрабатываемое событие (Message или CallbackQuery).
+        data : Optional[Dict[str, Any]]
+            Словарь данных, передаваемый обработчику.
 
-        Returns:
-            Any: Результат работы хэндлера.
+        Returns
+        -------
+        Any
+            Возвращаемое значение обработчика или None при ошибке.
         """
         if event is None or not event.from_user:
-            return await handler(event, data or {})
+            return
 
-        # Фильтруем сообщения по разрешённым типам
+        # Фильтрация неподдерживаемых типов сообщений.
         if isinstance(
             event,
             Message
         ) and event.content_type not in self.allowed_types:
             try:
                 await event.delete()
-            except Exception:
+            except BaseException:
                 pass
             return None
 
-        # Инициализация data
         data = data or {}
         self.counter += 1
 
-        # Обновляем счётчик и добавляем доп. данные
         data["counter"] = self.counter
         data.update(self.extra_data)
-
-        # Загружаем локализацию в зависимости от роли
         user_db: User | None
         data_db: Dict[str, str] | None
         user_db, data_db = await refresh_fsm_data(
             data=data,
             event=event,
-            role=self.role
+            role=self.role,
         )
+
         msg_id: int = user_db.msg_payment_id if user_db else 0
 
         try:
-            # Вызываем хэндлер
             result: Any = await handler(event, data)
-            await delete_stored_message(event, msg_id)
-            if user_db and data_db is not None:
-                async with async_session() as session:
-                    user_manager: UserManager = UserManager(session)
-                    await user_manager.update_user(user_db)
 
-                    data_manager: DataManager = DataManager(session)
-                    await data_manager.update_all(event.from_user.id, data_db)
-            # Удаляем событие после обработки, если включено
-            if self.delete_event and hasattr(event, "delete"):
+            chat_id: int | None = None
+            if isinstance(event, Message):
+                chat_id = event.chat.id
+            else:
+                msg: Any | None = getattr(event, "message", None)
+                if isinstance(msg, Message):
+                    chat_id = msg.chat.id
+
+            if chat_id is not None and msg_id:
+                if event.bot is None:
+                    return
                 try:
-                    await event.delete()
+                    await event.bot.delete_message(chat_id, msg_id)
                 except Exception:
                     pass
 
+            if user_db and data_db is not None:
+                async with async_session() as session:
+                    await UserManager(session).update_user(user_db)
+                    await DataManager(session).update_all(
+                        event.from_user.id,
+                        data_db,
+                    )
+
+            if self.delete_event:
+                try:
+                    await event.delete()
+                except BaseException:
+                    pass
+
             return result
-        except Exception as e:
-            # Логируем ошибки
-            await log_error(event, error=e)
 
-
-async def delete_stored_message(
-    event: Union[Message, CallbackQuery],
-    msg_id: int
-) -> None:
-    """
-    Удаляет сообщение, id которого хранится в БД,
-    основываясь на tg_id пользователя.
-    """
-    user: TgUser | None = event.from_user
-    if user is None:  # защита для статического анализатора
-        return
-
-    bot: Bot | None = event.bot
-    if bot is None:
-        return
-
-    # --- Получаем chat_id корректно ---
-    if isinstance(event, CallbackQuery):
-        if event.message is None:
-            return
-        chat_id: int = event.message.chat.id
-    else:
-        chat_id: int = event.chat.id
-
-    try:
-        await bot.delete_message(chat_id, msg_id)
-    except Exception:
-        pass
+        except Exception as error:
+            await log_error(event, error=error)
+            return None

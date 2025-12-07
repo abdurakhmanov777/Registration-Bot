@@ -117,7 +117,7 @@ class DataCRUD(DataManagerBase):
             try:
                 # Только проверяем корректность формата, без сохранения
                 caster(value)
-            except:
+            except Exception:
                 return
 
         try:
