@@ -52,7 +52,7 @@ class User(Base):
         Integer,
         nullable=False
     )
-    msg_payment_id: Mapped[int] = mapped_column(
+    msg_id_other: Mapped[int] = mapped_column(
         Integer,
         nullable=True
     )

@@ -109,7 +109,7 @@ class MwBase(BaseMiddleware):
             role=self.role,
         )
 
-        msg_id: int = user_db.msg_payment_id if user_db else 0
+        msg_id: int = user_db.msg_id_other if user_db else 0
 
         try:
             result: Any = await handler(event, data)

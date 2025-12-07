@@ -92,6 +92,6 @@ async def clbk_payment(
     )
 
     if msg:
-        user_db.msg_payment_id = msg.message_id
+        user_db.msg_id_other = msg.message_id
 
     await log(callback)
