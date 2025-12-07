@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Tuple
 
 from aiogram import types
 
+from app.config import SYMB
+
 from .make import build_keyboard
 
 
@@ -20,7 +22,7 @@ def kb_dynamic(
 ) -> types.InlineKeyboardMarkup:
     rows: List[List[Tuple[str, str]]] = [[
         *([(buttons.back, "userback")] if backstate != "2" else []),
-        *([(buttons.next, f"user_{state}")] if show_next else []),
+        *([(buttons.next, f"user{SYMB}{state}")] if show_next else []),
     ]]
     return build_keyboard(rows)
 
@@ -37,7 +39,7 @@ def kb_start(
         types.InlineKeyboardMarkup: Клавиатура с кнопкой согласия.
     """
     rows: List[List[Tuple[str, str]]] = [
-        [(buttons.consent, "user_2")]
+        [(buttons.consent, "user{SYMB}2")]
     ]
     return build_keyboard(rows)
 
@@ -55,7 +57,7 @@ def kb_submit(
         types.InlineKeyboardMarkup: Клавиатура с кнопками "Далее"
         и "Назад".
     """
-    text: str = "user_99" if payment else "success"
+    text: str = "user{SYMB}99" if payment else "success"
     rows: List[List[Tuple[str, str]]] = [
         [(buttons.back, "userback"), (buttons.next, text)]
     ]
@@ -90,7 +92,7 @@ def kb_select(
         next_step: str = option["next"]
         save: bool = option.get("save") is True
         callback_data: str = (
-            f"user_{next_step}_{text}_{name}" if save else f"user_{next_step}"
+            f"user{SYMB}{next_step}_{text}_{name}" if save else f"user{SYMB}{next_step}"
         )
 
         # Перенос ряда, если кнопка не помещается

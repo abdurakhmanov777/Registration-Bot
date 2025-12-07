@@ -1,7 +1,7 @@
-"""Фильтр callback-запросов, содержащих подстроку 'user_'.
+"""Фильтр callback-запросов, содержащих подстроку 'user{SYMB}'.
 
 Модуль определяет фильтр для обработки callback-запросов, в которых
-данные содержат подстроку 'user_'. Используется в маршрутах Aiogram.
+данные содержат подстроку 'user{SYMB}'. Используется в маршрутах Aiogram.
 """
 
 from typing import Any, Dict, Union
@@ -9,12 +9,14 @@ from typing import Any, Dict, Union
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery
 
+from app.config.settings import SYMB
+
 
 class CallbackNextFilter(BaseFilter):
-    """Фильтр для callback-запросов, содержащих подстроку 'user_'.
+    """Фильтр для callback-запросов, содержащих подстроку 'user{SYMB}'.
 
-    Если `callback.data` содержит подстроку 'user_', фильтр возвращает
-    словарь с этой подстрокой без префикса 'user_' для передачи в роутер.
+    Если `callback.data` содержит подстроку 'user{SYMB}', фильтр возвращает
+    словарь с этой подстрокой без префикса 'user{SYMB}' для передачи в роутер.
     Иначе возвращает False.
     """
 
@@ -22,7 +24,7 @@ class CallbackNextFilter(BaseFilter):
         self,
         callback: CallbackQuery,
     ) -> Union[Dict[str, Any], bool]:
-        """Проверить наличие подстроки 'user_' в данных callback-запроса.
+        """Проверить наличие подстроки 'user{SYMB}' в данных callback-запроса.
 
         Parameters
         ----------
@@ -32,13 +34,13 @@ class CallbackNextFilter(BaseFilter):
         Returns
         -------
         Union[Dict[str, Any], bool]
-            Словарь с ключом 'user_data', содержащим подстроку после 'user_',
-            если подстрока 'user_' найдена, иначе False.
+            Словарь с ключом 'user_data', содержащим подстроку после 'user{SYMB}',
+            если подстрока 'user{SYMB}' найдена, иначе False.
         """
-        if not callback.data or "user_" not in callback.data:
+        if not callback.data or f"user{SYMB}" not in callback.data:
             return False
 
         # split по "_" и убираем первый элемент 'user'
-        user_values: list[str] = callback.data.split("_")[1:]
-        
+        user_values: list[str] = callback.data.split(SYMB)[1:]
+
         return {"value": user_values}
