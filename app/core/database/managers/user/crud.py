@@ -94,54 +94,6 @@ class UserCRUD(UserManagerBase):
         await self.session.refresh(user)
         return user
 
-    async def msg_update(
-        self,
-        tg_id: int,
-        msg_id: int,
-    ) -> int:
-        """
-        Обновить id сообщения.
-
-        Args:
-            tg_id (int): Telegram ID пользователя.
-            msg_id (int): ID последнего сообщения (по умолчанию 0).
-
-        Returns:
-            msg_id: id старого сообщения
-        """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            return 0
-        old_msg: int = user.msg_id
-        user.msg_id = msg_id
-        # Фиксируем изменения
-        await self.session.commit()
-        return old_msg
-
-    async def msg_payment_update(
-        self,
-        tg_id: int,
-        msg_id: int,
-    ) -> int:
-        """
-        Обновить id сообщения.
-
-        Args:
-            tg_id (int): Telegram ID пользователя.
-            msg_id (int): ID последнего сообщения (по умолчанию 0).
-
-        Returns:
-            msg_id: id старого сообщения
-        """
-        user: Optional[User] = await self.get(tg_id)
-        if not user:
-            return 0
-        old_msg: int = user.msg_payment_id
-        user.msg_payment_id = msg_id
-        # Фиксируем изменения
-        await self.session.commit()
-        return old_msg
-
     async def delete(self, tg_id: int) -> bool:
         """
         Удалить пользователя из базы данных.
