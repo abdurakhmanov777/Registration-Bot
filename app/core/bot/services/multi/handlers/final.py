@@ -21,7 +21,7 @@ from app.core.database.models import User
 from ..context import MultiContext
 
 
-async def handler_success(
+async def handler_final(
     ctx: MultiContext,
 ) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """
@@ -78,7 +78,7 @@ async def handler_success(
     image_buffer: BytesIO = await generate_image(str(code))
 
     # Формирование подписи
-    template: Any = loc.messages.template.success
+    template: Any = loc.messages.template.final
     info: Any = loc.event
 
     part1: str

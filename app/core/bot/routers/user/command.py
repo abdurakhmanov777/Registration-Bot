@@ -1,8 +1,9 @@
 """
 Модуль регистрации команд Telegram-бота для приватных чатов.
 
-Содержит обработчики команд /start, /id и /help с динамическими
-клавиатурами и локализацией.
+Содержит обработчики команд /start, /id и /help.
+Каждая команда использует локализацию, динамические клавиатуры
+и обновляет состояние пользователя при необходимости.
 """
 
 from typing import Any, Dict
@@ -15,7 +16,6 @@ from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.keyboards import kb_delete
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
-from app.core.bot.services.multi.handlers.success import handler_success
 
 user_command: Router = Router()
 
@@ -28,15 +28,18 @@ async def cmd_start(
     message: types.Message,
     state: FSMContext
 ) -> None:
-    """Обрабатывает команду /start.
+    """
+    Обрабатывает команду /start.
 
-    Получает текст и клавиатуру из локализации по ключу команды
-    и отправляет сообщение с динамической клавиатурой или вызывает
-    handler_success при специальном состоянии.
+    - Определяет текущее состояние пользователя на основе данных БД.
+    - Получает текст и клавиатуру из локализации с помощью `multi()`.
+    - Отправляет локализованное приветственное сообщение.
+    - Удаляет предыдущее служебное сообщение, если оно существует.
+    - Логирует обращение пользователя.
 
     Args:
-        message (types.Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        message: Объект входящего сообщения Telegram.
+        state: FSM-контекст, содержащий локализацию и данные пользователя.
     """
     user_data: Dict[str, Any] = await state.get_data()
     user_db: Any = user_data.get("user_db")
@@ -82,11 +85,15 @@ async def cmd_id(
     message: types.Message,
     state: FSMContext
 ) -> None:
-    """Отправляет ID текущего чата с шаблоном текста и кнопкой удаления.
+    """
+    Отправляет ID текущего чата.
+
+    Формирует текст по шаблону из локализации (`loc.messages.template.id`)
+    и добавляет кнопку удаления сообщения.
 
     Args:
-        message (types.Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        message: Объект входящего сообщения Telegram.
+        state: FSM-контекст, содержащий локализацию.
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
@@ -114,11 +121,15 @@ async def cmd_help(
     message: types.Message,
     state: FSMContext
 ) -> None:
-    """Отправляет пользователю контакты админов с помощью кнопок.
+    """
+    Отправляет пользователю справочную информацию и контакты администраторов.
+
+    Сообщение формируется на основе локализации (`loc.messages.help`)
+    и дополняется клавиатурой с кнопкой удаления.
 
     Args:
-        message (types.Message): Входящее сообщение Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
+        message: Объект входящего сообщения Telegram.
+        state: FSM-контекст, содержащий локализацию.
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")

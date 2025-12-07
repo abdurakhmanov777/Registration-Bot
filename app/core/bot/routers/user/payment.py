@@ -1,9 +1,14 @@
 """
-Модуль для обработки callback-запросов Telegram-бота.
+Модуль обработки callback-запросов Telegram-бота.
 
-Содержит обработчики для навигации по состояниям пользователя,
-удаления сообщений, отправки данных, возврата к предыдущему состоянию
-и отмены регистрации.
+Содержит обработчики событий, связанных с оплатой, включая:
+    - подтверждение pre-checkout запроса (этап перед оплатой);
+    - обработку успешного платежа;
+    - формирование и отправку invoices;
+    - обновление состояния пользователя после оплаты.
+
+Модуль используется в приватных чатах и интегрирован с системой
+динамических состояний и локализацией.
 """
 
 from typing import Any, Dict
@@ -24,6 +29,18 @@ async def process_pre_checkout_query(
     pre_checkout_query: types.PreCheckoutQuery,
     bot: Bot
 ) -> None:
+    """Подтверждает pre-checkout запрос перед оплатой.
+
+    Telegram требует подтверждения pre-checkout события, иначе
+    пользователь не сможет завершить оплату.
+
+    Args:
+        pre_checkout_query (types.PreCheckoutQuery): Объект Telegram с данными о платеже.
+        bot (Bot): Экземпляр бота для отправки ответа.
+
+    Returns:
+        None
+    """
     await bot.answer_pre_checkout_query(
         pre_checkout_query.id,
         ok=True
@@ -31,10 +48,23 @@ async def process_pre_checkout_query(
 
 
 @user_payment.message(F.successful_payment)
-async def aaa(
+async def final(
     message: types.Message,
     state: FSMContext,
 ) -> None:
+    """Обрабатывает успешный платеж.
+
+    После подтвержденной Telegram оплаты обновляет состояние
+    пользователя и вызывает функцию `multi` для выполнения шагов,
+    связанных с завершением процесса регистрации.
+
+    Args:
+        message (types.Message): Сообщение с объектом `successful_payment`.
+        state (FSMContext): Контекст FSM пользователя.
+
+    Returns:
+        None
+    """
     user_data: Dict[str, Any] = await state.get_data()
     if not message.from_user:
         return
@@ -56,6 +86,20 @@ async def clbk_payment(
     callback: types.CallbackQuery,
     state: FSMContext
 ) -> None:
+    """Обрабатывает нажатие кнопки оплаты и отправляет пользователю invoice.
+
+    Формирует данные платежа, используя локализацию и параметры события,
+    и отправляет пользователю счёт. Сохраняет ID сообщения invoice для
+    дальнейших операций.
+
+    Args:
+        callback (types.CallbackQuery): Callback-запрос от пользователя.
+        state (FSMContext): Контекст FSM для доступа к данным пользователя.
+
+    Returns:
+        None
+    """
+    await callback.answer()
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
     user_db: Any = user_data.get("user_db")
