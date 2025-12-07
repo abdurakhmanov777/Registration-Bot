@@ -8,13 +8,12 @@
 
 import re
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions
 
 from app.core.bot.services.keyboards.user import kb_dynamic
 from app.core.bot.services.multi.context import MultiContext
-from app.core.bot.services.requests.data.crud import manage_data
 from app.core.bot.utils.morphology.casing import lower_words
 from app.core.bot.utils.morphology.inflection import inflect_text
 
@@ -73,27 +72,18 @@ async def handler_input(
         #         )
         #         return None
         if re.fullmatch(pattern, user_input):
-            # result: str | None = await manage_data(
-            #     tg_id=tg_id,
-            #     action="create_or_update",
-            #     key=base_text,
-            #     value=user_input,
-            #     value_type=value_type
-            # )
-            data_db[base_text] = user_input
-            # if result is None:
-                # error_occurred = True
-            pass
+            if await type_check(
+                value=user_input,
+                value_type=value_type
+            ):
+                data_db[base_text] = user_input
+            else:
+                error_occurred = True
         else:
             error_occurred = True
     else:
         # Если пользователь ничего не ввёл, пробуем взять сохранённые данные
         user_input = data_db.get(base_text, None)
-        # user_input = await manage_data(
-        #     tg_id=tg_id,
-        #     action="get",
-        #     key=base_text,
-        # )
 
     # Формируем текст сообщения в зависимости от результата проверки
     if error_occurred:
@@ -135,3 +125,27 @@ async def handler_input(
     opts: LinkPreviewOptions = LinkPreviewOptions(is_disabled=True)
 
     return text_message, keyboard, opts
+
+
+async def type_check(
+    value: str,
+    value_type: str
+) -> bool:
+    type_map: Dict[str, Callable[[str], Any]] = {
+        "int": int,
+        "bool": lambda v: v.lower() == "true",
+        "date": lambda v: datetime.strptime(v, "%d.%m.%Y"),
+        "time": lambda v: datetime.strptime(v, "%d.%m.%Y %H:%M:%S"),
+        "str": str
+    }
+    caster: Optional[Callable[[str], Any]] = type_map.get(
+        value_type.lower()
+    )
+    if not caster:
+        return False
+
+    try:
+        caster(value)
+        return True
+    except BaseException:
+        return False

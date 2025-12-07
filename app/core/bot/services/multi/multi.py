@@ -113,11 +113,8 @@ async def multi(
         key: str
         value_to_store: str
         key, value_to_store = data_select[:2]
-        await manage_data(
-            tg_id=tg_id,
-            action="create_or_update",
-            key=key,
-            value=value_to_store,
-        )
+        user_data: Dict[str, Any] = await state.get_data()
+        data_db: Any = user_data.get("data_db")
+        data_db[key] = value_to_store
 
     return await handler(context)

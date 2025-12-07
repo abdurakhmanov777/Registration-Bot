@@ -33,7 +33,8 @@ async def handler_submit(
         Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
             Итоговое сообщение, финальная клавиатура и настройки предпросмотра.
     """
-    states: List[str] = ctx.states
+    user_data: Dict[str, Any] = await ctx.state.get_data()
+    states: list[str] = user_data["user_db"].state
 
     if not isinstance(states, list):
         raise ValueError(
@@ -52,10 +53,8 @@ async def handler_submit(
     ]
 
     # Загружаем данные пользователя, фильтруя только нужные поля
-    data_list: Dict[str, Any] = await manage_data_list(
-        tg_id=ctx.tg_id,
-        keep_keys=keep_keys,
-    )
+    user_data: Dict[str, Any] = await ctx.state.get_data()
+    data_list: Any = user_data.get("data_db")
 
     # Формируем текст блоков данных
     items_text: str = "\n\n".join(
