@@ -92,7 +92,7 @@ class MwBase(BaseMiddleware):
         ) and event.content_type not in self.allowed_types:
             try:
                 await event.delete()
-            except BaseException:
+            except Exception:
                 pass
             return None
 
@@ -141,7 +141,7 @@ class MwBase(BaseMiddleware):
             if self.delete_event:
                 try:
                     await event.delete()
-                except BaseException:
+                except Exception:
                     pass
 
             return result

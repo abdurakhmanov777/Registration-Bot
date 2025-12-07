@@ -77,7 +77,7 @@ async def msg_user(
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-    except BaseException:
+    except Exception:
         pass
 
     await log(message)

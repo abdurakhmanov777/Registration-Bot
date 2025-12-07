@@ -91,7 +91,6 @@ async def clbk_payment(
         prices=prices,
     )
 
-    if msg:
-        user_db.msg_id_other = msg.message_id
-
+    user_db.msg_id_other = msg.message_id
+    user_db.state = user_db.state + ["100"]
     await log(callback)

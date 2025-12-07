@@ -147,5 +147,5 @@ async def type_check(
     try:
         caster(value)
         return True
-    except BaseException:
+    except Exception:
         return False

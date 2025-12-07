@@ -77,17 +77,14 @@ async def clbk_next(
         data_select=data_select,
         event=callback,
     )
-
+    user_db.state = user_db.state + [value[0]]
     try:
         await callback.message.edit_text(
             text=text_message,
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-
-        user_db.state = user_db.state + [value[0]]
-
-    except BaseException:
+    except Exception:
         pass
 
     await log(callback)
@@ -136,7 +133,7 @@ async def clbk_success(
             )
 
         user_db.state = user_db.state + ["100"]
-    except BaseException:
+    except Exception:
         pass
 
     await log(callback)
@@ -188,7 +185,7 @@ async def clbk_back(
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-    except BaseException:
+    except Exception:
         pass
 
     await log(callback)
@@ -257,12 +254,14 @@ async def clbk_cancel_confirm(
         value="1",
         tg_id=callback.from_user.id,
     )
-
-    await callback.message.edit_text(
-        text=text_message,
-        reply_markup=keyboard_message,
-        link_preview_options=link_opts
-    )
+    try:
+        await callback.message.edit_text(
+            text=text_message,
+            reply_markup=keyboard_message,
+            link_preview_options=link_opts
+        )
+    except Exception:
+        pass
 
     msg_id: int = user_db.msg_id
     user_db.msg_id = callback.message.message_id
@@ -275,7 +274,7 @@ async def clbk_cancel_confirm(
                 callback.message.chat.id,
                 msg_id
             )
-        except BaseException:
+        except Exception:
             pass
 
     await log(callback)

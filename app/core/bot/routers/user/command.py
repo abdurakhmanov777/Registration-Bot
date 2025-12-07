@@ -80,7 +80,7 @@ async def cmd_start(
         if isinstance(msg_id, int) and msg_id != 0:
             try:
                 await message.bot.delete_message(message.chat.id, msg_id)
-            except BaseException:
+            except Exception:
                 pass
 
     await log(message)
