@@ -62,7 +62,7 @@ async def handler_submit(
 
     # Формируем текст блоков данных
     items_text: str = "\n\n".join(
-        f"🔹️ {key}: {value}" for key, value in data_list.items()
+        f"🔸 {key}: {value}" for key, value in data_list.items()
     )
 
     # Получаем шаблоны начала и окончания сообщения
