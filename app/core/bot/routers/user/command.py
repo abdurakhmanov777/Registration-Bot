@@ -16,8 +16,6 @@ from app.core.bot.services.keyboards import kb_delete
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.success import handler_success
-from app.core.bot.services.requests.user import manage_user, manage_user_state
-from app.core.database.models.user import User
 
 user_command: Router = Router()
 
@@ -42,28 +40,19 @@ async def cmd_start(
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
 
-    if not loc or not message.from_user:
+    if not message.from_user:
         return
 
-    user_state: bool | str | list[str] | None = await manage_user_state(
-        message.from_user.id,
-        "peek"
-    )
+    user_state: list = user_db.state[-1]
 
-    db_user: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="get"
-    )
-
-    if not isinstance(db_user, User) or not isinstance(user_state, str):
+    if not isinstance(user_state, str):
         return
 
-    msg_id: User | bool | None | int = await manage_user(
-        tg_id=message.from_user.id,
-        action="msg_update",
-        msg_id=message.message_id + 1
-    )
+    msg_id: int = user_db.msg_id
+    user_db.msg_id = message.message_id + 1
+    await state.update_data(user_db=user_db)
 
     if user_state != "100":
         text_message: str
@@ -85,7 +74,8 @@ async def cmd_start(
         await handler_success(
             loc=loc,
             tg_id=message.from_user.id,
-            event=message
+            event=message,
+            user=user_db
         )
     if message.bot:
         if isinstance(msg_id, int) and msg_id != 0:

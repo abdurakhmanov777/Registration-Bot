@@ -5,10 +5,8 @@
 через БД.
 """
 
-from .crud import manage_user
 from .state import manage_user_state
 
 __all__: list[str] = [
-    "manage_user",
     "manage_user_state",
 ]

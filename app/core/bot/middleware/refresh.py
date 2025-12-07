@@ -47,7 +47,6 @@ async def refresh_fsm_data(
     if user_db is None and role == "user" and event:
         tg_id: int = getattr(event.from_user, "id")
         async with async_session() as session:
-            print(11111)
             user_manager: UserManager = UserManager(session)
             user_db = await user_manager.get_or_create(tg_id)
         await state.update_data(**{user_key: user_db})

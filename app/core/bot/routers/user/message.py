@@ -13,8 +13,6 @@ from aiogram.fsm.context import FSMContext
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import multi
-from app.core.bot.services.requests.user import manage_user, manage_user_state
-from app.core.database.models.user import User
 
 user_message: Router = Router()
 
@@ -41,22 +39,16 @@ async def msg_user(
     # Получаем локализацию пользователя
     user_data: dict[str, Any] = await state.get_data()
     loc: Any | None = user_data.get("loc_user")
-    if not loc:
+    user_db: Any = user_data.get("user_db")
+
+    if not loc or not message.from_user:
         return
 
     tg_id: int = message.from_user.id
 
-    # Получаем состояние и данные пользователя из базы
-    db_user: User | bool | None | int = await manage_user(
-        tg_id=tg_id,
-        action="get"
-    )
-    user_state: bool | str | list[str] | None = await manage_user_state(
-        tg_id,
-        "peek"
-    )
+    user_state: list = user_db.state[-1]
 
-    if not isinstance(db_user, User) or not isinstance(user_state, str):
+    if not isinstance(user_state, str):
         return
 
     # Проверяем, что шаг пользователя ожидает ввод текста
@@ -80,7 +72,7 @@ async def msg_user(
     try:
         await message.bot.edit_message_text(
             chat_id=message.chat.id,
-            message_id=db_user.msg_id,
+            message_id=user_db.msg_id,
             text=text_message,
             reply_markup=keyboard_message,
             link_preview_options=link_opts

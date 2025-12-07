@@ -9,17 +9,12 @@
 from typing import Any, Dict
 
 from aiogram import Bot, F, Router, types
-from aiogram.enums import ContentType
 from aiogram.fsm.context import FSMContext
 
 from app.config.settings import CURRENCY, PROVIDER_TOKEN
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.logger import log
-from app.core.bot.services.multi import multi
 from app.core.bot.services.multi.handlers.success import handler_success
-from app.core.bot.services.requests.user.crud import manage_user
-from app.core.bot.services.requests.user.state import manage_user_state
-from app.core.database.models.user import User
 
 user_payment: Router = Router()
 
@@ -42,25 +37,27 @@ async def aaa(
 ) -> None:
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
     if not loc or not message.from_user:
         return
 
     await handler_success(
         loc=loc,
         tg_id=message.from_user.id,
-        event=message
+        event=message,
+        user=user_db
     )
     if message.bot:
-        msg_id: User | bool | None | int = await manage_user(
-            tg_id=message.from_user.id,
-            action="msg_update",
-            msg_id=message.message_id + 1
-        )
+        msg_id: int = user_db.msg_id
+        user_db.msg_id = message.message_id + 1
+        await state.update_data(user_db=user_db)
+
         if isinstance(msg_id, int) and msg_id != 0:
             try:
                 await message.bot.delete_message(message.chat.id, msg_id)
             except BaseException:
                 pass
+
 
 @user_payment.callback_query(
     ChatTypeFilter(chat_type=["private"]),
@@ -72,6 +69,7 @@ async def clbk_payment(
 ) -> None:
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
 
     if not isinstance(
         callback.message, types.Message
@@ -95,10 +93,7 @@ async def clbk_payment(
     )
 
     if msg:
-        await manage_user(
-            tg_id=callback.from_user.id,
-            action="update",
-            msg_payment_id=msg.message_id
-        )
+        user_db.msg_payment_id = msg.message_id
+        await state.update_data(user_db=user_db)
 
     await log(callback)

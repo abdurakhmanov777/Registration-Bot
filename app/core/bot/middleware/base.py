@@ -11,19 +11,16 @@
 """
 
 import time
-from functools import wraps
-from typing import (Any, Awaitable, Callable, Coroutine, Dict, Literal,
-                    Optional, Set, Union)
+from typing import (Any, Awaitable, Callable, Coroutine, Literal, Optional,
+                    Set, Union)
 
 from aiogram import BaseMiddleware, Bot
 from aiogram.types import CallbackQuery, ContentType, Message
 from aiogram.types.user import User as TgUser
 
 from app.core.bot.services.logger import log_error
-from app.core.bot.services.requests.user.crud import manage_user
 from app.core.database import async_session
 from app.core.database.managers.user import UserManager
-from app.core.database.models.user import User
 
 from .refresh import refresh_fsm_data
 
@@ -101,12 +98,12 @@ class MwBase(BaseMiddleware):
 
         # Загружаем локализацию в зависимости от роли
         user_db: Any = await refresh_fsm_data(data, event, role=self.role)
-
-        await delete_stored_message(event)
+        msg_id: int = user_db.msg_payment_id
         try:
             # Вызываем хэндлер
             result: Any = await handler(event, data)
 
+            await delete_stored_message(event, msg_id)
             print(user_db.state)
             async with async_session() as session:
                 user_manager: UserManager = UserManager(session)
@@ -142,7 +139,8 @@ async def measure_time(coro: Coroutine[Any, Any, Any]) -> Any:
 
 
 async def delete_stored_message(
-    event: Union[Message, CallbackQuery]
+    event: Union[Message, CallbackQuery],
+    msg_id: int
 ) -> None:
     """
     Удаляет сообщение, id которого хранится в БД,
@@ -152,8 +150,6 @@ async def delete_stored_message(
     user: TgUser | None = event.from_user
     if user is None:  # защита для статического анализатора
         return
-
-    user_id: int = user.id
 
     bot: Bot | None = event.bot
     if bot is None:
@@ -167,16 +163,7 @@ async def delete_stored_message(
     else:
         chat_id: int = event.chat.id
 
-    # --- Получаем id сообщения из БД ---
-    msg_payment_id: User | bool | None | int = await manage_user(
-        tg_id=user_id,
-        action="msg_payment_update",
-        msg_id=0
-    )
-
-    # --- Проверка типа и удаление ---
-    if isinstance(msg_payment_id, int):
-        try:
-            await bot.delete_message(chat_id, msg_payment_id)
-        except Exception:
-            pass
+    try:
+        await bot.delete_message(chat_id, msg_id)
+    except Exception:
+        pass

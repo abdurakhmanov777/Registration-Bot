@@ -17,8 +17,6 @@ from app.core.bot.services.keyboards.user import kb_cancel_confirm
 from app.core.bot.services.logger import log
 from app.core.bot.services.multi import handler_success, multi
 from app.core.bot.services.requests.data import manage_data_clear
-from app.core.bot.services.requests.user import manage_user, manage_user_state
-from app.core.database.models import User
 
 user_callback: Router = Router()
 
@@ -64,6 +62,7 @@ async def clbk_next(
     user_data: Dict[str, Any] = await state.get_data()
 
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
 
     data_select: list[str] | None = None
     if len(value) == 3:
@@ -87,11 +86,10 @@ async def clbk_next(
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-        await manage_user_state(
-            callback.from_user.id,
-            "push",
-            value[0]
-        )
+
+        user_db.state = user_db.state + [value[0]]
+        await state.update_data(user_db=user_db)
+
     except BaseException:
         pass
 
@@ -120,31 +118,28 @@ async def clbk_success(
 
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
 
     msg_id: int | None = await handler_success(
         loc=loc,
         tg_id=callback.from_user.id,
-        event=callback
+        event=callback,
+        user=user_db
     )
     if not isinstance(msg_id, int) or not callback.message.bot:
         return
 
     try:
-        msg_id_old: User | bool | None | int = await manage_user(
-            tg_id=callback.from_user.id,
-            action="msg_update",
-            msg_id=msg_id
-        )
+        msg_id_old: int = user_db.msg_id
+        user_db.msg_id = msg_id
         if isinstance(msg_id_old, int):
             await callback.message.bot.delete_message(
                 callback.message.chat.id,
                 msg_id_old
             )
-        await manage_user_state(
-            callback.from_user.id,
-            "push",
-            "100"
-        )
+
+        user_db.state = user_db.state + ["100"]
+        await state.update_data(user_db=user_db)
     except BaseException:
         pass
 
@@ -173,11 +168,12 @@ async def clbk_back(
 
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
 
-    backstate: bool | str | list[str] | None = await manage_user_state(
-        callback.from_user.id,
-        "popeek"
-    )
+    user_db.state = user_db.state[:-1]
+    backstate: str = user_db.state[-1]
+    await state.update_data(user_db=user_db)
+
     if not isinstance(backstate, str):
         return
 
@@ -252,13 +248,11 @@ async def clbk_cancel_confirm(
     """
     user_data: Dict[str, Any] = await state.get_data()
     loc: Any = user_data.get("loc_user")
+    user_db: Any = user_data.get("user_db")
     if not isinstance(callback.message, types.Message):
         return
 
-    await manage_user_state(
-        callback.from_user.id,
-        "clear"
-    )
+    user_db.state = ["1"]
     await manage_data_clear(tg_id=callback.from_user.id)
 
     text_message: str
@@ -276,11 +270,9 @@ async def clbk_cancel_confirm(
         link_preview_options=link_opts
     )
 
-    msg_id: User | bool | None | int = await manage_user(
-        tg_id=callback.from_user.id,
-        action="msg_update",
-        msg_id=callback.message.message_id
-    )
+    msg_id: int = user_db.msg_id
+    user_db.msg_id = callback.message.message_id
+    await state.update_data(user_db=user_db)
     if (
         isinstance(msg_id, int) and msg_id != 0 and callback.message.bot
     ):
@@ -289,7 +281,7 @@ async def clbk_cancel_confirm(
                 callback.message.chat.id,
                 msg_id
             )
-        except:
+        except BaseException:
             pass
 
     await log(callback)

@@ -16,7 +16,6 @@ from app.config.settings import CURRENCY, PROVIDER_TOKEN
 from app.core.bot.services.generator import generate_image
 from app.core.bot.services.generator.generator_code import generate_code
 from app.core.bot.services.keyboards.user import kb_success
-from app.core.bot.services.requests.user import manage_user
 from app.core.database.models.user import User
 
 
@@ -29,6 +28,7 @@ async def handler_success(
             types.Message,
         ]
     ],
+    user: User
 ) -> Optional[int]:
     """
     Обрабатывает состояние отправки финального сообщения с изображением.
@@ -62,15 +62,6 @@ async def handler_success(
     if message is None or message.bot is None:
         return None
 
-    # Получение пользователя
-    user_result: Union[User, bool, None, int] = await manage_user(
-        tg_id=tg_id,
-        action="get",
-    )
-    user: Optional[User] = user_result if isinstance(
-        user_result, User) else None
-    if user is None:
-        return None
 
     # Генерация кода
     code: Optional[int] = generate_code(
@@ -142,34 +133,5 @@ async def handler_success(
         )
     except:
         pass
-
-    # if loc.event.payment.status:
-    #     prices: list[types.LabeledPrice] = [
-    #         types.LabeledPrice(
-    #             label="Оплата",
-    #             amount=loc.event.payment.price * 100
-    #         )
-    #     ]
-
-    #     bot: Bot | None = None
-    #     if isinstance(event, types.Message):
-    #         bot: Bot | None = event.bot
-    #     elif isinstance(event, types.CallbackQuery) and event.message is not None:
-    #         bot = event.message.bot
-    #     if bot:
-    #         msg: types.Message = await bot.send_invoice(
-    #             chat_id=tg_id,
-    #             title=loc.event.name,
-    #             description="Оплата участия",
-    #             payload="order",
-    #             provider_token=PROVIDER_TOKEN,
-    #             currency=CURRENCY,
-    #             prices=prices,
-    #         )
-    #         await manage_user(
-    #             tg_id=tg_id,
-    #             action="update",
-    #             msg_payment_id=msg.message_id
-    #         )
 
     return sent_message.message_id
