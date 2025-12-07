@@ -57,7 +57,7 @@ def kb_submit(
         types.InlineKeyboardMarkup: Клавиатура с кнопками "Далее"
         и "Назад".
     """
-    text: str = f"user{SYMB}99" if payment else "success"
+    text: str = f"user{SYMB}99" if payment else f"user{SYMB}100"
     rows: List[List[Tuple[str, str]]] = [
         [(buttons.back, "userback"), (buttons.next, text)]
     ]

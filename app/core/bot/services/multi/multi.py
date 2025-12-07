@@ -18,6 +18,7 @@ from .handlers.payment import handler_payment
 from .handlers.select import handler_select
 from .handlers.start import handler_start
 from .handlers.submit import handler_submit
+from .handlers.success import handler_success
 from .handlers.text import handler_text
 
 # Таблица стандартных обработчиков.
@@ -32,6 +33,7 @@ SPECIAL_HANDLERS: Dict[str, Callable[[MultiContext], Any]] = {
     "1": handler_start,
     "98": handler_submit,
     "99": handler_payment,
+    "100": handler_success,
 }
 
 

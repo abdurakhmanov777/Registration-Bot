@@ -78,63 +78,15 @@ async def clbk_next(
         event=callback,
     )
     user_db.state = user_db.state + [value[0]]
-    try:
-        await callback.message.edit_text(
-            text=text_message,
-            reply_markup=keyboard_message,
-            link_preview_options=link_opts
-        )
-    except Exception:
-        pass
-
-    await log(callback)
-
-
-@user_callback.callback_query(
-    ChatTypeFilter(chat_type=["private"]),
-    F.data == "success"
-)
-async def clbk_success(
-    callback: types.CallbackQuery,
-    state: FSMContext
-) -> None:
-    """Обрабатывает отправку данных пользователем.
-
-    Формирует сообщение для отправки, обновляет ID сообщения
-    в базе и изменяет состояние пользователя.
-
-    Args:
-        callback (types.CallbackQuery): Callback-запрос от Telegram.
-        state (FSMContext): Контекст FSM для хранения данных пользователя.
-    """
-    if not isinstance(callback.message, types.Message):
-        return
-
-    user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    user_db: Any = user_data.get("user_db")
-
-    msg_id: int | None = await handler_success(
-        loc=loc,
-        tg_id=callback.from_user.id,
-        event=callback,
-        user=user_db
-    )
-    if not isinstance(msg_id, int) or not callback.message.bot:
-        return
-
-    try:
-        msg_id_old: int = user_db.msg_id
-        user_db.msg_id = msg_id
-        if isinstance(msg_id_old, int):
-            await callback.message.bot.delete_message(
-                callback.message.chat.id,
-                msg_id_old
+    if value[0] != "100":
+        try:
+            await callback.message.edit_text(
+                text=text_message,
+                reply_markup=keyboard_message,
+                link_preview_options=link_opts
             )
-
-        user_db.state = user_db.state + ["100"]
-    except Exception:
-        pass
+        except Exception:
+            pass
 
     await log(callback)
 

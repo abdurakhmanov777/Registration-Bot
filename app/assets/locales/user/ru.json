@@ -6,7 +6,8 @@
         "time": "20:00:00",
         "payment": {
             "status": true,
-            "price": 700
+            "price": 700,
+            "currency": "RUB"
         }
     },
     "steps": {

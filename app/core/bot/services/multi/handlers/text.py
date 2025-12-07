@@ -11,7 +11,8 @@ from typing import Any, Tuple
 from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions
 
 from app.core.bot.services.keyboards.user import kb_dynamic
-from app.core.bot.services.multi.context import MultiContext
+
+from ..context import MultiContext
 
 
 async def handler_text(

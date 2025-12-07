@@ -11,10 +11,10 @@ from typing import Any, Dict
 from aiogram import Bot, F, Router, types
 from aiogram.fsm.context import FSMContext
 
-from app.config.settings import CURRENCY, PROVIDER_TOKEN
+from app.config.settings import PROVIDER_TOKEN
 from app.core.bot.routers.filters import ChatTypeFilter
 from app.core.bot.services.logger import log
-from app.core.bot.services.multi.handlers.success import handler_success
+from app.core.bot.services.multi import multi
 
 user_payment: Router = Router()
 
@@ -36,26 +36,16 @@ async def aaa(
     state: FSMContext,
 ) -> None:
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
-    user_db: Any = user_data.get("user_db")
-    if not loc or not message.from_user:
+    if not message.from_user:
         return
-
-    await handler_success(
-        loc=loc,
+    await multi(
+        state=state,
+        value="100",
         tg_id=message.from_user.id,
-        event=message,
-        user=user_db
+        event=message
     )
-    if message.bot:
-        msg_id: int = user_db.msg_id
-        user_db.msg_id = message.message_id + 1
-
-        if isinstance(msg_id, int) and msg_id != 0:
-            try:
-                await message.bot.delete_message(message.chat.id, msg_id)
-            except BaseException:
-                pass
+    user_db: Any = user_data.get("user_db")
+    user_db.state = user_db.state + ["100"]
 
 
 @user_payment.callback_query(
@@ -87,10 +77,9 @@ async def clbk_payment(
         description="Оплата участия",
         payload="order",
         provider_token=PROVIDER_TOKEN,
-        currency=CURRENCY,
+        currency=loc.event.payment.currency,
         prices=prices,
     )
 
     user_db.msg_id_other = msg.message_id
-    user_db.state = user_db.state + ["100"]
     await log(callback)

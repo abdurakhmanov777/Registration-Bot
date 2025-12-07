@@ -39,44 +39,32 @@ async def cmd_start(
         state (FSMContext): Контекст FSM для хранения данных пользователя.
     """
     user_data: Dict[str, Any] = await state.get_data()
-    loc: Any = user_data.get("loc_user")
     user_db: Any = user_data.get("user_db")
-
-    if not message.from_user:
-        return
-
     user_state: list = user_db.state[-1]
-
-    if not isinstance(user_state, str):
+    if not message.from_user or not message.bot or not isinstance(
+        user_state, str
+    ):
         return
 
     msg_id: int = user_db.msg_id
-    user_db.msg_id = message.message_id + 1
 
+    text_message: str
+    keyboard_message: types.InlineKeyboardMarkup
+    link_opts: types.LinkPreviewOptions
+    text_message, keyboard_message, link_opts = await multi(
+        state=state,
+        value=user_state,
+        tg_id=message.from_user.id,
+        event=message
+    )
     if user_state != "100":
-        text_message: str
-        keyboard_message: types.InlineKeyboardMarkup
-        link_opts: types.LinkPreviewOptions
-
-        text_message, keyboard_message, link_opts = await multi(
-            state=state,
-            value=user_state,
-            tg_id=message.from_user.id,
-        )
-
         await message.answer(
             text=text_message,
             reply_markup=keyboard_message,
             link_preview_options=link_opts
         )
-    else:
-        await handler_success(
-            loc=loc,
-            tg_id=message.from_user.id,
-            event=message,
-            user=user_db
-        )
-    if message.bot:
+
+        user_db.msg_id = message.message_id + 1
         if isinstance(msg_id, int) and msg_id != 0:
             try:
                 await message.bot.delete_message(message.chat.id, msg_id)

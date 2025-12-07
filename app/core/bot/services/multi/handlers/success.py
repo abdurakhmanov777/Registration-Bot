@@ -7,29 +7,23 @@
 
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Tuple
 
-from aiogram import Bot, types
+from aiogram import types
 from aiogram.enums import ChatAction
+from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions
 
-from app.config.settings import CURRENCY, PROVIDER_TOKEN
 from app.core.bot.services.generator import generate_image
 from app.core.bot.services.generator.generator_code import generate_code
 from app.core.bot.services.keyboards.user import kb_success
-from app.core.database.models.user import User
+from app.core.database.models import User
+
+from ..context import MultiContext
 
 
 async def handler_success(
-    loc: Any,
-    tg_id: int,
-    event: Optional[
-        Union[
-            types.CallbackQuery,
-            types.Message,
-        ]
-    ],
-    user: User
-) -> Optional[int]:
+    ctx: MultiContext,
+) -> Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]:
     """
     Обрабатывает состояние отправки финального сообщения с изображением.
 
@@ -53,15 +47,23 @@ async def handler_success(
 
     # Универсальное извлечение сообщения
     message: Optional[types.MaybeInaccessibleMessageUnion]
+    event: types.CallbackQuery | types.Message | None = ctx.event
+    loc: Any = ctx.loc
+
+    user_data: Dict[str, Any] = await ctx.state.get_data()
+    user: list[str] = user_data["user_db"]
     if isinstance(event, types.CallbackQuery):
         message = event.message
     else:
         message = event
 
+    if not message or not message.bot or not isinstance(user, User):
+        return "", InlineKeyboardMarkup(
+            inline_keyboard=[[]]
+        ), LinkPreviewOptions()
     # Проверка доступности message и его бота
-    if message is None or message.bot is None:
-        return None
-
+    # if message is None or message.bot is None:
+    #     return None
 
     # Генерация кода
     code: Optional[int] = generate_code(
@@ -71,7 +73,7 @@ async def handler_success(
 
     # Отображение действия загрузки
     await message.bot.send_chat_action(
-        chat_id=tg_id,
+        chat_id=ctx.tg_id,
         action=ChatAction.UPLOAD_PHOTO,
     )
 
@@ -134,4 +136,18 @@ async def handler_success(
     except Exception:
         pass
 
-    return sent_message.message_id
+    # return sent_message.message_id
+    user_data: Dict[str, Any] = await ctx.state.get_data()
+    user_db: Any = user_data.get("user_db")
+    msg_id_old: int = user_db.msg_id
+    user_db.msg_id = sent_message.message_id
+    if isinstance(msg_id_old, int):
+        await message.bot.delete_message(
+            message.chat.id,
+            msg_id_old
+        )
+
+    user_db.state = user_db.state + ["100"]
+    return "", InlineKeyboardMarkup(
+        inline_keyboard=[[]]
+    ), LinkPreviewOptions()
