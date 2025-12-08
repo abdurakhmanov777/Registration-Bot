@@ -6,6 +6,7 @@
 """
 
 from .admin import Admin
+from .base import Base
 from .data import Data
 from .file import UserFile
 from .flag import Flag
@@ -14,6 +15,7 @@ from .user import User
 # Список публичных объектов модуля
 __all__: list[str] = [
     "Admin",
+    "Base",
     "Data",
     "UserFile",
     "Flag",
