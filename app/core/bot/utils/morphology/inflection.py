@@ -7,12 +7,12 @@ morph: pymorphy3.MorphAnalyzer = pymorphy3.MorphAnalyzer()
 
 # Сопоставление падежей с кодами pymorphy3
 CASES: dict[str, str] = {
-    'именительный': 'nomn',
-    'родительный': 'gent',
-    'дательный': 'datv',
-    'винительный': 'accs',
-    'творительный': 'ablt',
-    'предложный': 'loct'
+    "именительный": "nomn",
+    "родительный": "gent",
+    "дательный": "datv",
+    "винительный": "accs",
+    "творительный": "ablt",
+    "предложный": "loct"
 }
 
 
@@ -34,7 +34,7 @@ async def inflect_text(
     """
     case_code: Optional[str] = CASES.get(case)
     if not case_code:
-        return f'Неизвестный падеж: {case}'
+        return f"Неизвестный падеж: {case}"
 
     def choose_best_parse(word: str) -> Any:
         """
@@ -44,9 +44,9 @@ async def inflect_text(
         """
         parses: List[Any] = morph.parse(word)
         for p in parses:
-            if 'NOUN' in p.tag and 'nomn' in p.tag:
+            if "NOUN" in p.tag and "nomn" in p.tag:
                 return p
-            if 'ADJF' in p.tag and 'nomn' in p.tag:
+            if "ADJF" in p.tag and "nomn" in p.tag:
                 return p
         return parses[0]
 
@@ -54,7 +54,7 @@ async def inflect_text(
         """
         Сохраняет регистр букв исходного слова при склонении.
         """
-        return ''.join(
+        return "".join(
             n.upper() if o.isupper() else n.lower()
             for o, n in zip(original, new)
         ) + new[len(original):]
@@ -64,7 +64,7 @@ async def inflect_text(
 
     # Находим существительное для согласования
     noun: Optional[Any] = next(
-        (p for p in parsed if 'NOUN' in p.tag),
+        (p for p in parsed if "NOUN" in p.tag),
         None
     )
     if not noun:
@@ -76,25 +76,25 @@ async def inflect_text(
     for word, parse in zip(words, parsed):
         # Склоняем существительное и согласованные прилагательные
         if parse == noun or (
-                'ADJF' in parse.tag and parse.tag.number == number):
+                "ADJF" in parse.tag and parse.tag.number == number):
             tags: Set[str] = set()
 
             # Особенности склонения винительного падежа
-            if case_code == 'accs':
-                if 'NOUN' in parse.tag:
-                    if parse.tag.gender == 'femn' and parse.tag.number == 'sing':
-                        tags.add('accs')
-                    elif 'anim' in parse.tag:
-                        tags.add('accs')
+            if case_code == "accs":
+                if "NOUN" in parse.tag:
+                    if parse.tag.gender == "femn" and parse.tag.number == "sing":
+                        tags.add("accs")
+                    elif "anim" in parse.tag:
+                        tags.add("accs")
                     else:
-                        tags.add('nomn')
-                elif 'ADJF' in parse.tag:
-                    if parse.tag.gender == 'femn' and parse.tag.number == 'sing':
-                        tags.add('accs')
-                    elif 'anim' in noun.tag:
-                        tags.add('accs')
+                        tags.add("nomn")
+                elif "ADJF" in parse.tag:
+                    if parse.tag.gender == "femn" and parse.tag.number == "sing":
+                        tags.add("accs")
+                    elif "anim" in noun.tag:
+                        tags.add("accs")
                     else:
-                        tags.add('nomn')
+                        tags.add("nomn")
             else:
                 tags.add(case_code)
 
@@ -107,4 +107,4 @@ async def inflect_text(
         else:
             result.append(word)
 
-    return ' '.join(result)
+    return " ".join(result)

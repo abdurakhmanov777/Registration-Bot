@@ -61,6 +61,6 @@ async def generate_image(
 
     # Сохраняем изображение в буфер и возвращаем
     buffer = BytesIO()
-    image.save(buffer, format='PNG')
+    image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer

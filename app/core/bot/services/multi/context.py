@@ -23,7 +23,7 @@ class MultiContext:
     state: FSMContext
     loc: Any
     loc_state: Any
-    value: str = ''
+    value: str = ""
     tg_id: int = 0
     data: Optional[str] = None
     event: Optional[types.CallbackQuery | types.Message] = None

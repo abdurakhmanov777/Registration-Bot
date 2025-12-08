@@ -2,7 +2,7 @@ import re
 from typing import Any
 
 FIX_O_PATTERN: re.Pattern[str] = re.compile(r"\b([оО])\s+([«'“‘(]*)(\w)")
-VOWELS: set[str] = set('аеёиоуыэюяАЕЁИОУЫЭЮЯ')
+VOWELS: set[str] = set("аеёиоуыэюяАЕЁИОУЫЭЮЯ")
 
 
 async def fix_o(
@@ -19,9 +19,9 @@ async def fix_o(
         first_letter: Any
         preposition, prefix, first_letter = match.groups()
         if first_letter in VOWELS:
-            return f'{
-                "Об" if preposition == "О" else "об"
-            } {prefix}{first_letter}'
+            return f"{
+                'Об' if preposition == 'О' else 'об'
+            } {prefix}{first_letter}"
         return match.group(0)
 
     return FIX_O_PATTERN.sub(replacer, text)
