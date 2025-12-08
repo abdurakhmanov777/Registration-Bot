@@ -2,8 +2,7 @@
 Модуль для управления опросом Telegram-ботов через asyncio.
 
 Содержит класс PollingManager для запуска, остановки и проверки
-активных ботов, а также функцию для получения глобального
-экземпляра менеджера опроса.
+активных ботов
 """
 
 import asyncio
@@ -206,18 +205,3 @@ class PollingManager:
         """
         task: Optional[Task[Any]] = self.tasks.get(api_token)
         return task is not None and not task.done()
-
-
-_polling_manager: PollingManager = PollingManager()
-
-
-def get_polling_manager() -> PollingManager:
-    """
-    Возвращает глобальный экземпляр PollingManager.
-
-    Returns
-    -------
-    PollingManager
-        Экземпляр менеджера опроса ботов.
-    """
-    return _polling_manager

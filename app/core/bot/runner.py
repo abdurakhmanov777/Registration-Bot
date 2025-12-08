@@ -11,11 +11,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.types.user import User
 from loguru import logger
 
-from app.core.bot.polling_manager import PollingManager
+from app.core.bot.services.polling.manager import PollingManager
 
 from .commands import register_bot_commands
 from .dispatcher import setup_dispatcher
-from .polling_manager import get_polling_manager
+from .services.polling import get_polling_manager
 
 
 async def run_bot(
