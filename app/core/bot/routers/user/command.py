@@ -26,7 +26,7 @@ def get_router_user_command() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         Command("start")
     )
-    async def cmd_start(
+    async def start(
         message: types.Message,
         state: FSMContext
     ) -> None:
@@ -82,7 +82,7 @@ def get_router_user_command() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         Command("id")
     )
-    async def cmd_id(
+    async def id(
         message: types.Message,
         state: FSMContext
     ) -> None:
@@ -117,7 +117,7 @@ def get_router_user_command() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         Command("help")
     )
-    async def cmd_help(
+    async def help(
         message: types.Message,
         state: FSMContext
     ) -> None:

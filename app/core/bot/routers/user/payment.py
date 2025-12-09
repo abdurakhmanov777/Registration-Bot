@@ -48,7 +48,6 @@ def get_router_user_payment() -> Router:
             ok=True
         )
 
-
     @router.message(F.successful_payment)
     async def final(
         message: types.Message,
@@ -79,12 +78,11 @@ def get_router_user_payment() -> Router:
         user_db: Any = user_data.get("user_db")
         user_db.state = user_db.state + ["100"]
 
-
     @router.callback_query(
         ChatTypeFilter(chat_type=["private"]),
         F.data == "payment"
     )
-    async def clbk_payment(
+    async def payment(
         callback: types.CallbackQuery,
         state: FSMContext
     ) -> None:

@@ -26,7 +26,7 @@ def get_router_user_message() -> Router:
     @router.message(
         ChatTypeFilter(chat_type=["private"])
     )
-    async def msg_user(
+    async def user(
         message: types.Message,
         state: FSMContext
     ) -> None:

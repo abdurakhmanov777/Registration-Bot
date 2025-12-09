@@ -14,7 +14,7 @@ def get_router_intercept() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         InterceptFilter()
     )
-    async def clbk_check_flag(
+    async def check_flag(
         callback: CallbackQuery,
         flag_bot: bool,
         flag_reg: bool,

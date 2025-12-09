@@ -26,7 +26,7 @@ def get_router_user_callback() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         F.data == "delete"
     )
-    async def clbk_delete(
+    async def delete(
         callback: types.CallbackQuery
     ) -> None:
         """Удаляет сообщение, вызвавшее callback-запрос.
@@ -42,7 +42,7 @@ def get_router_user_callback() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         CallbackNextFilter()
     )
-    async def clbk_next(
+    async def next(
         callback: types.CallbackQuery,
         state: FSMContext,
         value: str,
@@ -99,7 +99,7 @@ def get_router_user_callback() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         F.data == "userback"
     )
-    async def clbk_back(
+    async def back(
         callback: types.CallbackQuery,
         state: FSMContext,
     ) -> None:
@@ -151,7 +151,7 @@ def get_router_user_callback() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         F.data == "cancel_reg"
     )
-    async def clbk_cancel(
+    async def cancel(
         callback: types.CallbackQuery,
         state: FSMContext
     ) -> None:
@@ -181,7 +181,7 @@ def get_router_user_callback() -> Router:
         ChatTypeFilter(chat_type=["private"]),
         F.data == "cancel_reg_confirm"
     )
-    async def clbk_cancel_confirm(
+    async def cancel_confirm(
         callback: types.CallbackQuery,
         state: FSMContext,
     ) -> None:
