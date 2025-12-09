@@ -12,11 +12,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.types.user import User
 from loguru import logger
 
-from app.core.bot.services.polling.manager import PollingManager
-
 from .commands import register_bot_commands
 from .dispatcher import setup_dispatcher
-from .services.polling import get_polling_manager
+from .services.polling import PollingManager, get_polling_manager
 
 
 async def run_bot(
@@ -39,7 +37,7 @@ async def run_bot(
         polling_manager: PollingManager = get_polling_manager()
 
         if polling_manager.is_bot_running(api_token):
-            logger.warning("Бот уже запущен, старт бота отклонен")
+            logger.warning("Бот запущен, повторный запуск отклонен")
             return False
 
         async with Bot(api_token) as bot:
@@ -51,9 +49,7 @@ async def run_bot(
                 Выполняется сразу после успешного старта polling.
                 """
                 bot_info: User = await bot.get_me()
-                logger.debug(
-                    f"Бот @{bot_info.username} запущен"
-                )
+                logger.debug(f"Бот @{bot_info.username} запущен")
 
             async def on_shutdown() -> None:
                 """Обрабатывает остановку бота.
@@ -99,7 +95,7 @@ def stop_bot(
         polling_manager: PollingManager = get_polling_manager()
 
         if not polling_manager.is_bot_running(api_token):
-            logger.warning("Бот не запущен, остановка бота отклонена")
+            logger.warning("Бот не запущен, оставнока отклонена")
             return False
 
         polling_manager.stop_bot_polling(api_token)
