@@ -142,12 +142,17 @@ async def handler_final(
     msg_id_old: int = user_db.msg_id
     user_db.msg_id = sent_message.message_id
     if isinstance(msg_id_old, int):
-        await message.bot.delete_message(
-            message.chat.id,
-            msg_id_old
-        )
+        try:
+            await message.bot.delete_message(
+                message.chat.id,
+                msg_id_old
+            )
+        except Exception:
+            pass
 
     user_db.state = user_db.state + ["100"]
+    user_db.date_registration = datetime.now()
+
     return "", InlineKeyboardMarkup(
         inline_keyboard=[[]]
     ), LinkPreviewOptions()

@@ -205,8 +205,6 @@ def get_router_user_callback() -> Router:
         if not isinstance(callback.message, types.Message):
             return
 
-        user_db.state = ["1"]
-
         text_message: str
         keyboard_message: types.InlineKeyboardMarkup
         link_opts: types.LinkPreviewOptions
@@ -226,7 +224,9 @@ def get_router_user_callback() -> Router:
 
         msg_id: int = user_db.msg_id
         user_db.msg_id = callback.message.message_id
-
+        user_db.state = ["1"]
+        user_db.date_registration = None
+        
         if (
             isinstance(msg_id, int) and msg_id != 0 and callback.message.bot
         ):
