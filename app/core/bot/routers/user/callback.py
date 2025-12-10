@@ -6,7 +6,6 @@
 текущего шага и получения служебной информации.
 """
 
-from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from aiogram import F, Router, types
