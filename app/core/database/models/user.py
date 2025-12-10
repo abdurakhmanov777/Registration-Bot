@@ -31,10 +31,12 @@ class User(Base):
     )
     tg_id: Mapped[int] = mapped_column(
         BigInteger,
-        nullable=False,
-        unique=True
+        nullable=False
     )
-
+    bot_id: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False
+    )
     # Хранение в БД — обычная строка ("1,2,3")
     _state: Mapped[str] = mapped_column(
         "state",

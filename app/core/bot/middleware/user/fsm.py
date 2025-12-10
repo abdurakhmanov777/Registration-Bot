@@ -5,6 +5,8 @@
 
 from typing import Any, Dict, Optional, Tuple, cast
 
+from aiogram.fsm.context import FSMContext
+
 from app.core.bot.services.localization import Localization, load_localization
 from app.core.database import DataManager, User, UserManager, async_session
 
@@ -30,7 +32,7 @@ async def fsm_data_user(
         Tuple[Optional[User], Optional[Dict[str, Any]]]: Объект пользователя
         из FSM или БД и словарь данных пользователя (data_db). None для админа.
     """
-    state: Any = data.get("state")
+    state: FSMContext | None = data.get("state")
     if state is None:
         raise ValueError("FSMContext не найден в data")
 
@@ -47,20 +49,27 @@ async def fsm_data_user(
 
     # Если user_db отсутствует, создаём для обычного пользователя
     if user_db is None and event:
-        tg_id: int = getattr(event.from_user, "id")
+        bot_id: int = getattr(event, "bot").id
+        tg_id: int = event.from_user.id
         async with async_session() as session:
             user_manager: UserManager = UserManager(session)
-            user_db = await user_manager.get_or_create(tg_id)
+            user_db = await user_manager.get_or_create(
+                tg_id=tg_id,
+                bot_id=bot_id,
+            )
 
             data_manager: DataManager = DataManager(session)
-            data_db = await data_manager.dict_all(tg_id)
+            data_db = await data_manager.dict_all(
+                tg_id=tg_id,
+                bot_id=bot_id,
+            )
 
         # Сохраняем user_db и data_db в FSM
         await state.update_data(**{user_key: user_db, data_key: data_db})
 
     # --- Обновление локализации ---
     if loc_key not in fsm_data:
-        lang: str = getattr(user_db, "lang", "ru") if user_db else "ru"
+        lang: str = user_db.lang if user_db else "ru"
         loc: Localization = await load_localization(
             lang=lang,
             role="user"
@@ -68,3 +77,38 @@ async def fsm_data_user(
         await state.update_data(**{loc_key: loc, "lang": lang})
 
     return user_db, data_db
+
+
+async def clear_fsm_user(data: Dict[str, Any]) -> None:
+    """
+    Полностью удаляет данные, записанные fsm_data_user:
+
+    Удаляются:
+    - user_db
+    - data_db
+    - loc_user
+    - lang
+
+    Остальные данные FSM НЕ затрагиваются.
+    """
+
+    state: FSMContext | None = data.get("state")
+    if state is None:
+        raise ValueError("FSMContext не найден в data")
+
+    keys_to_delete = {"user_db", "data_db", "loc_user", "lang"}
+
+    # Текущие данные
+    fsm_data: Dict[str, Any] = await state.get_data()
+
+    # Если ничего не нужно удалять — выход
+    if not (keys_to_delete & fsm_data.keys()):
+        return
+
+    # Создаем новый словарь БЕЗ удаляемых ключей
+    cleaned_data = {
+        k: v for k, v in fsm_data.items() if k not in keys_to_delete
+    }
+
+    # Полностью перезаписываем FSM очищенной версией
+    await state.set_data(cleaned_data)

@@ -26,6 +26,10 @@ class Admin(Base):
         BigInteger,
         nullable=False
     )
+    bot_id: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False
+    )
     state: Mapped[str] = mapped_column(
         String(32),
         default="1",

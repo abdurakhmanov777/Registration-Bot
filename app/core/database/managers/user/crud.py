@@ -20,6 +20,7 @@ class UserCRUD(UserManagerBase):
     async def get_or_create(
         self,
         tg_id: int,
+        bot_id: int,
         lang: str = "ru",
         msg_id: int = 0,
     ) -> User:
@@ -28,27 +29,36 @@ class UserCRUD(UserManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             lang (str): Язык пользователя (по умолчанию "ru").
             msg_id (int): ID последнего сообщения (по умолчанию 0).
 
         Returns:
             User: Существующий или созданный объект пользователя.
         """
-        user: Optional[User] = await self.get(tg_id)
+        user: Optional[User] = await self.get(
+            tg_id=tg_id,
+            bot_id=bot_id,)
         if user is None:
             user = await self.create(
                 tg_id=tg_id,
+                bot_id=bot_id,
                 lang=lang,
                 msg_id=msg_id,
             )
         return user
 
-    async def get(self, tg_id: int) -> Optional[User]:
+    async def get(
+        self,
+        tg_id: int,
+        bot_id: int,
+    ) -> Optional[User]:
         """
         Получить пользователя по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь
@@ -56,7 +66,10 @@ class UserCRUD(UserManagerBase):
         """
         try:
             result: Result[Tuple[User]] = await self.session.execute(
-                select(User).where(User.tg_id == tg_id)
+                select(User).where(
+                    User.tg_id == tg_id,
+                    User.bot_id == bot_id,
+                )
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as e:
@@ -67,6 +80,7 @@ class UserCRUD(UserManagerBase):
     async def create(
         self,
         tg_id: int,
+        bot_id: int,
         lang: str = "ru",
         msg_id: int = 0,
     ) -> User:
@@ -75,6 +89,7 @@ class UserCRUD(UserManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             lang (str): Язык пользователя (по умолчанию "ru").
             msg_id (int): ID последнего сообщения (по умолчанию 0).
 
@@ -83,6 +98,7 @@ class UserCRUD(UserManagerBase):
         """
         user = User(
             tg_id=tg_id,
+            bot_id=bot_id,
             lang=lang,
             msg_id=msg_id,
             state="1",
@@ -93,17 +109,25 @@ class UserCRUD(UserManagerBase):
         await self.session.refresh(user)
         return user
 
-    async def delete(self, tg_id: int) -> bool:
+    async def delete(
+        self,
+        tg_id: int,
+        bot_id: int,
+    ) -> bool:
         """
         Удалить пользователя из базы данных.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
-        user: Optional[User] = await self.get(tg_id)
+        user: Optional[User] = await self.get(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return False
 
@@ -112,19 +136,28 @@ class UserCRUD(UserManagerBase):
         await self.session.commit()
         return True
 
-    async def update(self, tg_id: int, **fields: Any) -> Optional[User]:
+    async def update(
+        self,
+        tg_id: int,
+        bot_id: int,
+        **fields: Any
+    ) -> Optional[User]:
         """
         Обновить поля существующего пользователя через kwargs.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             **fields: Поля для обновления (lang, msg_id, state и др.).
 
         Returns:
             Optional[User]: Обновлённый объект User или None, если
             пользователь не найден.
         """
-        user: Optional[User] = await self.get(tg_id)
+        user: Optional[User] = await self.get(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return None
 

@@ -37,28 +37,78 @@ async def check_type(
     return True
 
 
-def get_chat_id(
-    event: Any
-) -> Optional[int]:
+async def extract_attribute(
+    event: Any,
+    attr_path: str
+) -> Optional[Any | int]:
     """
-    Извлекает chat_id для последующей обработки.
+    Универсально извлекает вложенный атрибут из объекта события.
+
+    Сначала ищет атрибут по указанному пути в event. Если не найдено,
+    повторяет поиск через event.message. Если и там нет — возвращает None.
 
     Parameters
     ----------
     event : Any
-        Событие пользователя.
+        Событие пользователя (Message, CallbackQuery и др.).
+    attr_path : str
+        Путь к атрибуту через точки, например "chat.id".
 
     Returns
     -------
-    Optional[int]
-        Идентификатор чата или None.
+    Optional[Any]
+        Значение атрибута или None, если путь недоступен.
     """
-    if isinstance(event, Message):
-        return event.chat.id
-    msg: Any = getattr(event, "message", None)
-    if isinstance(msg, Message):
-        return msg.chat.id
-    return None
+    def _get_nested(
+        obj: Any,
+        path: str
+    ) -> Optional[Any]:
+        current: Any = obj
+        for part in path.split("."):
+            if current is None:
+                return None
+            current = getattr(current, part, None)
+        return current
+
+    # Сначала ищем напрямую
+    result = _get_nested(event, attr_path)
+    if result is not None:
+        return result
+
+    # Если не нашли, пробуем через message
+    msg: Any | None = getattr(event, "message", None)
+    if msg:
+        result: Any | None = _get_nested(msg, attr_path)
+    return result
+
+
+# def get_bot(event: Any) -> Optional[int]:
+#     """Извлекает объект Bot из события."""
+#     return extract_attribute(event, "bot").id or \
+#            extract_attribute(event, "message.bot")
+
+# def get_chat_id(
+#     event: Any
+# ) -> Optional[int]:
+#     """
+#     Извлекает chat_id для последующей обработки.
+
+#     Parameters
+#     ----------
+#     event : Any
+#         Событие пользователя.
+
+#     Returns
+#     -------
+#     Optional[int]
+#         Идентификатор чата или None.
+#     """
+#     if isinstance(event, Message):
+#         return event.chat.id
+#     msg: Any = getattr(event, "message", None)
+#     if isinstance(msg, Message):
+#         return msg.chat.id
+#     return None
 
 
 async def remove_old_msg(
@@ -108,7 +158,8 @@ async def remove_event(
 
 
 async def update_db(
-    user_id: int,
+    tg_id: int,
+    bot_id: int,
     user: Optional[User],
     data: Optional[Dict[str, str]],
 ) -> None:
@@ -121,10 +172,16 @@ async def update_db(
         Экземпляр пользователя.
     data : Optional[Dict[str, str]]
         Данные пользователя.
-    user_id : int
+    tg_id : int
         Идентификатор пользователя.
     """
     if user and data is not None:
         async with async_session() as session:
-            await UserManager(session).update_user(user)
-            await DataManager(session).update_all(user_id, data)
+            await UserManager(session).update_user(
+                user=user
+            )
+            await DataManager(session).update_all(
+                tg_id=tg_id,
+                bot_id=bot_id,
+                new_data=data
+            )

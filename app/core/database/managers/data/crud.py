@@ -22,11 +22,16 @@ from .base import DataManagerBase
 class DataCRUD(DataManagerBase):
     """Менеджер для выполнения CRUD-операций с данными пользователей."""
 
-    async def _get_user(self, tg_id: int) -> Optional[User]:
+    async def _get_user(
+        self,
+        tg_id: int,
+        bot_id: int,
+    ) -> Optional[User]:
         """Получает пользователя по его Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь
@@ -34,7 +39,10 @@ class DataCRUD(DataManagerBase):
         """
         try:
             result: SAResult[tuple[User]] = await self.session.execute(
-                select(User).where(User.tg_id == tg_id)
+                select(User).where(
+                    User.tg_id == tg_id,
+                    User.bot_id == bot_id
+                )
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as error:
@@ -44,18 +52,23 @@ class DataCRUD(DataManagerBase):
     async def get(
         self,
         tg_id: int,
+        bot_id: int,
         key: str
     ) -> Optional[Data]:
         """Получает запись данных по ключу для конкретного пользователя.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
 
         Returns:
             Optional[Data]: Объект Data, если запись найдена, иначе None.
         """
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return None
 
@@ -74,6 +87,7 @@ class DataCRUD(DataManagerBase):
     async def create_or_update(
         self,
         tg_id: int,
+        bot_id: int,
         key: str,
         value: str,
         value_type: Optional[str] = None
@@ -82,6 +96,7 @@ class DataCRUD(DataManagerBase):
 
         Аргументы:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
             value (str): Значение данных в строковом виде.
             value_type (Optional[str]): Тип значения (int, bool, str, dict,
@@ -91,7 +106,10 @@ class DataCRUD(DataManagerBase):
             Optional[Data]: Созданная или обновленная запись Data.
         """
         # Получаем пользователя один раз
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return None
 
@@ -121,7 +139,10 @@ class DataCRUD(DataManagerBase):
         try:
             # Объединяем один блок для уменьшения транзакций
             data: Optional[Data] = await self.session.scalar(
-                select(Data).where(Data.user_id == user.id, Data.key == key)
+                select(Data).where(
+                    Data.user_id == user.id,
+                    Data.key == key
+                )
             )
             if data:
                 data.value = value
@@ -141,18 +162,24 @@ class DataCRUD(DataManagerBase):
     async def delete(
         self,
         tg_id: int,
+        bot_id: int,
         key: str
     ) -> bool:
         """Удаляет запись данных пользователя по ключу.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
-        data: Optional[Data] = await self.get(tg_id, key)
+        data: Optional[Data] = await self.get(
+            tg_id=tg_id,
+            bot_id=bot_id,
+            key=key,
+        )
         if not data:
             return False
 

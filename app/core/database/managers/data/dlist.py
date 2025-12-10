@@ -21,19 +21,24 @@ class DataList(DataManagerBase):
 
     async def _get_user(
         self,
-        tg_id: int
+        tg_id: int,
+        bot_id: int,
     ) -> Optional[User]:
         """Получает объект пользователя по его Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь не найден.
         """
         try:
             result: SAResult[tuple[User]] = await self.session.execute(
-                select(User).where(User.tg_id == tg_id)
+                select(User).where(
+                    User.tg_id == tg_id,
+                    User.bot_id == bot_id
+                )
             )
             return result.scalar_one_or_none()
         except SQLAlchemyError as error:
@@ -42,17 +47,22 @@ class DataList(DataManagerBase):
 
     async def dict_all(
         self,
-        tg_id: int
+        tg_id: int,
+        bot_id: int,
     ) -> Dict[str, Any]:
         """Получает все пары ключ–значение пользователя в виде словаря.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             Dict[str, Any]: Словарь ключ–значение для пользователя.
         """
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return {}
 
@@ -67,17 +77,22 @@ class DataList(DataManagerBase):
 
     async def clear_all(
         self,
-        tg_id: int
+        tg_id: int,
+        bot_id: int,
     ) -> bool:
         """Удаляет все записи пользователя.
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return False
 
@@ -95,6 +110,7 @@ class DataList(DataManagerBase):
     async def clear_except_keys(
         self,
         tg_id: int,
+        bot_id: int,
         keep_keys: list[str]
     ) -> bool:
         """
@@ -102,12 +118,16 @@ class DataList(DataManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
+            bot_id (int): ID бота.
             keep_keys (list[str]): Список ключей, которые не удаляются.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return False
 
@@ -130,16 +150,23 @@ class DataList(DataManagerBase):
     async def update_all(
         self,
         tg_id: int,
+        bot_id: int,
         new_data: Dict[str, Any]
     ) -> bool:
-        user: Optional[User] = await self._get_user(tg_id)
+        user: Optional[User] = await self._get_user(
+            tg_id=tg_id,
+            bot_id=bot_id,
+        )
         if not user:
             return False
 
         try:
             # Если пришёл пустой словарь, удаляем все записи
             if not new_data:
-                return await self.clear_all(tg_id)
+                return await self.clear_all(
+                    tg_id=tg_id,
+                    bot_id=bot_id,
+                )
 
             # Обновляем или создаём записи
             for key, value in new_data.items():
@@ -151,7 +178,11 @@ class DataList(DataManagerBase):
                 if result.rowcount is None or result.rowcount == 0:
                     # Создаём новую запись, если обновление не произошло
                     await self.session.execute(
-                        insert(Data).values(user_id=user.id, key=key, value=value)
+                        insert(Data).values(
+                            user_id=user.id,
+                            key=key,
+                            value=value
+                        )
                     )
             await self.session.commit()
             return True
