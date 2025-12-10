@@ -159,7 +159,7 @@ async def remove_event(
 
 async def update_db(
     tg_id: int,
-    chat_id: int,
+    bot_id: int,
     user: Optional[User],
     data: Optional[Dict[str, str]],
 ) -> None:
@@ -182,6 +182,6 @@ async def update_db(
             )
             await DataManager(session).update_all(
                 tg_id=tg_id,
-                chat_id=chat_id,
+                bot_id=bot_id,
                 new_data=data
             )

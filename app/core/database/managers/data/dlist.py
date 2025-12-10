@@ -22,13 +22,13 @@ class DataList(DataManagerBase):
     async def _get_user(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[User]:
         """Получает объект пользователя по его Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь не найден.
@@ -37,7 +37,7 @@ class DataList(DataManagerBase):
             result: SAResult[tuple[User]] = await self.session.execute(
                 select(User).where(
                     User.tg_id == tg_id,
-                    User.chat_id == chat_id
+                    User.bot_id == bot_id
                 )
             )
             return result.scalar_one_or_none()
@@ -48,20 +48,20 @@ class DataList(DataManagerBase):
     async def dict_all(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Dict[str, Any]:
         """Получает все пары ключ–значение пользователя в виде словаря.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Dict[str, Any]: Словарь ключ–значение для пользователя.
         """
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return {}
@@ -78,20 +78,20 @@ class DataList(DataManagerBase):
     async def clear_all(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> bool:
         """Удаляет все записи пользователя.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return False
@@ -110,7 +110,7 @@ class DataList(DataManagerBase):
     async def clear_except_keys(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         keep_keys: list[str]
     ) -> bool:
         """
@@ -118,7 +118,7 @@ class DataList(DataManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             keep_keys (list[str]): Список ключей, которые не удаляются.
 
         Returns:
@@ -126,7 +126,7 @@ class DataList(DataManagerBase):
         """
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return False
@@ -150,12 +150,12 @@ class DataList(DataManagerBase):
     async def update_all(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         new_data: Dict[str, Any]
     ) -> bool:
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return False
@@ -165,7 +165,7 @@ class DataList(DataManagerBase):
             if not new_data:
                 return await self.clear_all(
                     tg_id=tg_id,
-                    chat_id=chat_id,
+                    bot_id=bot_id,
                 )
 
             # Обновляем или создаём записи

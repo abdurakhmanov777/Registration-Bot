@@ -7,6 +7,7 @@
     - MwIntercept для системной блокировки
     - MwUserCallback для пользовательских callback_query
     - MwUserMessage для пользовательских сообщений
+    - MwUserPayment для оплаты
 """
 
 from typing import Any
@@ -114,6 +115,6 @@ def MwUserPayment() -> MwBase:
         delete_event=True,
         role="user",
         allowed_types={
-            ContentType.SUCCESSFUL_PAYMENT  # успешные платежи
+            ContentType.SUCCESSFUL_PAYMENT
         }
     )

@@ -25,13 +25,13 @@ class DataCRUD(DataManagerBase):
     async def _get_user(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[User]:
         """Получает пользователя по его Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь
@@ -41,7 +41,7 @@ class DataCRUD(DataManagerBase):
             result: SAResult[tuple[User]] = await self.session.execute(
                 select(User).where(
                     User.tg_id == tg_id,
-                    User.chat_id == chat_id
+                    User.bot_id == bot_id
                 )
             )
             return result.scalar_one_or_none()
@@ -52,14 +52,14 @@ class DataCRUD(DataManagerBase):
     async def get(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         key: str
     ) -> Optional[Data]:
         """Получает запись данных по ключу для конкретного пользователя.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
 
         Returns:
@@ -67,7 +67,7 @@ class DataCRUD(DataManagerBase):
         """
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return None
@@ -87,7 +87,7 @@ class DataCRUD(DataManagerBase):
     async def create_or_update(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         key: str,
         value: str,
         value_type: Optional[str] = None
@@ -96,7 +96,7 @@ class DataCRUD(DataManagerBase):
 
         Аргументы:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
             value (str): Значение данных в строковом виде.
             value_type (Optional[str]): Тип значения (int, bool, str, dict,
@@ -108,7 +108,7 @@ class DataCRUD(DataManagerBase):
         # Получаем пользователя один раз
         user: Optional[User] = await self._get_user(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return None
@@ -162,14 +162,14 @@ class DataCRUD(DataManagerBase):
     async def delete(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         key: str
     ) -> bool:
         """Удаляет запись данных пользователя по ключу.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             key (str): Ключ данных.
 
         Returns:
@@ -177,7 +177,7 @@ class DataCRUD(DataManagerBase):
         """
         data: Optional[Data] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
             key=key,
         )
         if not data:

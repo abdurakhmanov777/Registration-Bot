@@ -17,7 +17,7 @@ class AdminState(AdminCRUD):
     async def push_state(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         new_state: str,
     ) -> bool:
         """
@@ -25,7 +25,7 @@ class AdminState(AdminCRUD):
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             new_state (str): Новое состояние для добавления.
 
         Returns:
@@ -33,7 +33,7 @@ class AdminState(AdminCRUD):
         """
         admin: Optional[Admin] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id
+            bot_id=bot_id
         )
         if not admin:
             # Администратор не найден
@@ -50,14 +50,14 @@ class AdminState(AdminCRUD):
     async def pop_state(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[str]:
         """
         Удалить последнее состояние из стека администратора.
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[str]: Удалённое состояние или None, если
@@ -65,7 +65,7 @@ class AdminState(AdminCRUD):
         """
         admin: Optional[Admin] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not admin:
             return None
@@ -83,14 +83,14 @@ class AdminState(AdminCRUD):
     async def peek_state(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[str]:
         """
         Получить текущее состояние без удаления.
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[str]: Последнее состояние в стеке или None,
@@ -98,7 +98,7 @@ class AdminState(AdminCRUD):
         """
         admin: Optional[Admin] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not admin:
             return None

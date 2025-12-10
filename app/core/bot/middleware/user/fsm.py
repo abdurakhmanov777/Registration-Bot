@@ -50,19 +50,19 @@ async def fsm_data_user(
 
     # Если user_db отсутствует, создаём для обычного пользователя
     if user_db is None and event:
-        chat_id: int = getattr(event, "bot").id
+        bot_id: int = event.bot.id
         tg_id: int = event.from_user.id
         async with async_session() as session:
             user_manager: UserManager = UserManager(session)
             user_db = await user_manager.get_or_create(
                 tg_id=tg_id,
-                chat_id=chat_id,
+                bot_id=bot_id,
             )
 
             data_manager: DataManager = DataManager(session)
             data_db = await data_manager.dict_all(
                 tg_id=tg_id,
-                chat_id=chat_id,
+                bot_id=bot_id,
             )
 
         # Сохраняем user_db и data_db в FSM

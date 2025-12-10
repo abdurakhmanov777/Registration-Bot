@@ -26,7 +26,7 @@ class Admin(Base):
         BigInteger,
         nullable=False
     )
-    chat_id: Mapped[int] = mapped_column(
+    bot_id: Mapped[int] = mapped_column(
         BigInteger,
         nullable=False
     )

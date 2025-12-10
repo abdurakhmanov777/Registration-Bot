@@ -20,7 +20,7 @@ class UserCRUD(UserManagerBase):
     async def get_or_create(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         lang: str = "ru",
         msg_id: int = 0,
     ) -> User:
@@ -29,7 +29,7 @@ class UserCRUD(UserManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             lang (str): Язык пользователя (по умолчанию "ru").
             msg_id (int): ID последнего сообщения (по умолчанию 0).
 
@@ -38,11 +38,11 @@ class UserCRUD(UserManagerBase):
         """
         user: Optional[User] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,)
+            bot_id=bot_id,)
         if user is None:
             user = await self.create(
                 tg_id=tg_id,
-                chat_id=chat_id,
+                bot_id=bot_id,
                 lang=lang,
                 msg_id=msg_id,
             )
@@ -51,14 +51,14 @@ class UserCRUD(UserManagerBase):
     async def get(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[User]:
         """
         Получить пользователя по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[User]: Объект User или None, если пользователь
@@ -68,7 +68,7 @@ class UserCRUD(UserManagerBase):
             result: Result[Tuple[User]] = await self.session.execute(
                 select(User).where(
                     User.tg_id == tg_id,
-                    User.chat_id == chat_id,
+                    User.bot_id == bot_id,
                 )
             )
             return result.scalar_one_or_none()
@@ -80,7 +80,7 @@ class UserCRUD(UserManagerBase):
     async def create(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         lang: str = "ru",
         msg_id: int = 0,
     ) -> User:
@@ -89,7 +89,7 @@ class UserCRUD(UserManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             lang (str): Язык пользователя (по умолчанию "ru").
             msg_id (int): ID последнего сообщения (по умолчанию 0).
 
@@ -98,7 +98,7 @@ class UserCRUD(UserManagerBase):
         """
         user = User(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
             lang=lang,
             msg_id=msg_id,
             state="1",
@@ -112,21 +112,21 @@ class UserCRUD(UserManagerBase):
     async def delete(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> bool:
         """
         Удалить пользователя из базы данных.
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             bool: True, если удаление прошло успешно, иначе False.
         """
         user: Optional[User] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return False
@@ -139,7 +139,7 @@ class UserCRUD(UserManagerBase):
     async def update(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         **fields: Any
     ) -> Optional[User]:
         """
@@ -147,7 +147,7 @@ class UserCRUD(UserManagerBase):
 
         Args:
             tg_id (int): Telegram ID пользователя.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             **fields: Поля для обновления (lang, msg_id, state и др.).
 
         Returns:
@@ -156,7 +156,7 @@ class UserCRUD(UserManagerBase):
         """
         user: Optional[User] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
         )
         if not user:
             return None

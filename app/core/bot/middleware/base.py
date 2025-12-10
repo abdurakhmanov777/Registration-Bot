@@ -105,12 +105,13 @@ class MwBase(BaseMiddleware):
 
             await utils.update_db(
                 tg_id=event.from_user.id,
-                chat_id=event.bot.id,
+                bot_id=event.bot.id,
                 user=user,
                 data=db,
             )
+
         else:
             # Логика для админов будет добавлена позже
             pass
-
+        print(event.bot.id)
         return result

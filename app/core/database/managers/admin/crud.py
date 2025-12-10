@@ -21,14 +21,14 @@ class AdminCRUD(AdminManagerBase):
     async def get(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> Optional[Admin]:
         """
         Получить администратора по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             Optional[Admin]: Объект администратора или None.
@@ -36,7 +36,7 @@ class AdminCRUD(AdminManagerBase):
         try:
             result: Result[Tuple[Admin]] = await self.session.execute(
                 select(Admin).where(
-                    Admin.tg_id == tg_id, Admin.chat_id == chat_id
+                    Admin.tg_id == tg_id, Admin.bot_id == bot_id
                 )
             )
             return result.scalar_one_or_none()
@@ -48,7 +48,7 @@ class AdminCRUD(AdminManagerBase):
     async def create(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
         name: Optional[str] = None,
         lang: str = "ru",
         text: str = "Нет текста",
@@ -60,7 +60,7 @@ class AdminCRUD(AdminManagerBase):
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
             name (Optional[str]): Имя администратора.
             lang (str): Язык администратора.
             text (str): Текст сообщения администратора.
@@ -72,7 +72,7 @@ class AdminCRUD(AdminManagerBase):
         """
         admin = Admin(
             tg_id=tg_id,
-            chat_id=chat_id,
+            bot_id=bot_id,
             name=name,
             lang=lang,
             text=text,
@@ -89,21 +89,21 @@ class AdminCRUD(AdminManagerBase):
     async def delete(
         self,
         tg_id: int,
-        chat_id: int,
+        bot_id: int,
     ) -> bool:
         """
         Удалить администратора по Telegram ID.
 
         Args:
             tg_id (int): Telegram ID администратора.
-            chat_id (int): ID бота.
+            bot_id (int): ID бота.
 
         Returns:
             bool: True, если удаление успешно, иначе False.
         """
         admin: Optional[Admin] = await self.get(
             tg_id=tg_id,
-            chat_id=chat_id
+            bot_id=bot_id
         )
         if not admin:
             # Администратор с указанным ID не найден
