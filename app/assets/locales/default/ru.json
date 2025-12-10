@@ -4,8 +4,9 @@
         "address": "Проспект Маршала Жукова, 4",
         "date": "2025-12-04",
         "time": "20:00:00",
+        "confirm": true,
         "payment": {
-            "status": true,
+            "status": false,
             "price": 700,
             "currency": "RUB"
         },

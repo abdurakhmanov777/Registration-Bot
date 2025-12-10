@@ -28,21 +28,19 @@ async def handler_final(
     Обрабатывает состояние отправки финального сообщения с изображением.
 
     Загружает данные пользователя, генерирует код, создает изображение
-    и отправляет финальное сообщение. Сообщение закрепляется в чате.
+    и отправляет финальное сообщение с закреплением в чате.
 
     Parameters
     ----------
-    loc : Any
-        Объект локализации, содержащий шаблоны и данные события.
-    tg_id : int
-        Telegram ID пользователя.
-    event : CallbackQuery | Message | None
-        Исходное событие, содержащее сообщение или callback.
+    ctx : MultiContext
+        Контекст текущего состояния, содержащий объект локализации,
+        событие и Telegram ID пользователя.
 
     Returns
     -------
-    Optional[int]
-        Идентификатор отправленного сообщения или None при ошибке.
+    Tuple[str, InlineKeyboardMarkup, LinkPreviewOptions]
+        Кортеж с идентификатором сообщения (пустая строка),
+        разметкой клавиатуры и опциями предпросмотра ссылок.
     """
 
     # Универсальное извлечение сообщения
@@ -106,10 +104,13 @@ async def handler_final(
         f"{template.names.date}{date_str}"
     )
 
+    flag: bool = not info.payment.status and info.confirm
+
     caption: str = (
         f"{part1}{code}"
         f"{part2}{info_text}"
         f"{part3}"
+        f"{template.confirm if flag else ""}"
     )
 
     # Отправка изображения
