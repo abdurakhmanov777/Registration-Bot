@@ -113,5 +113,5 @@ class MwBase(BaseMiddleware):
         else:
             # Логика для админов будет добавлена позже
             pass
-        print(event.bot.id)
+        
         return result
