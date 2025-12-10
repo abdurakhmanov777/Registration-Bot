@@ -62,7 +62,7 @@ async def refresh_data_user(
     if loc_key not in fsm_data:
         lang: str = getattr(user_db, "lang", "ru") if user_db else "ru"
         loc: Localization = await load_localization(
-            language=lang,
+            lang=lang,
             role="user"
         )
         await state.update_data(**{loc_key: loc, "lang": lang})
